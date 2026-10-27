@@ -20,5 +20,16 @@
   "posts_tracked": 100,
   "likes_gained": 1,
   "comments_gained": 0
+ },
+ {
+  "ts": "2026-10-27T19:53:45+00:00",
+  "followers": 5233,
+  "follows": 82,
+  "media_count": 764,
+  "likes": 1788,
+  "comments": 220,
+  "posts_tracked": 100,
+  "likes_gained": 1,
+  "comments_gained": 0
  }
 ]
