@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --surface: #fcfcfb;
+  --border: #e4e3df;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --muted: #8a8984;
+  --grid: #ecebe7;
+  --accent: #2a78d6;
+  --s1: #2a78d6;   /* seguidores / curtidas */
+  --s2: #eb6834;   /* comentários */
+  --neg: #e34948;  /* perda de seguidores */
+  --good: #008300;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110;
+    --surface: #1a1a19;
+    --border: #2c2c2a;
+    --text: #f0efec;
+    --text-2: #c3c2b7;
+    --muted: #8f8e88;
+    --grid: #262624;
+    --accent: #3987e5;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --neg: #e66767;
+    --good: #3fae4a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110;
+  --surface: #1a1a19;
+  --border: #2c2c2a;
+  --text: #f0efec;
+  --text-2: #c3c2b7;
+  --muted: #8f8e88;
+  --grid: #262624;
+  --accent: #3987e5;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --neg: #e66767;
+  --good: #3fae4a;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 48px; }
+
+header {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.avatar {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  background: var(--grid); border: 1px solid var(--border); flex: none;
+}
+.who { flex: 1; min-width: 180px; }
+.who h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.who p { margin: 2px 0 0; color: var(--text-2); font-size: 13px; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.seg {
+  display: inline-flex; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px;
+}
+.seg button {
+  border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 13px;
+  font-weight: 500; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.icon-btn {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+  width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 15px;
+}
+
+.kpis {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px; margin-bottom: 14px;
+}
+.kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 16px 14px;
+}
+.kpi .label { color: var(--text-2); font-size: 12.5px; font-weight: 500; }
+.kpi .value {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.kpi .delta { font-size: 12.5px; margin-top: 2px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--good); }
+.delta.down { color: var(--neg); }
+
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; min-width: 0;
+}
+.card h2 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card .sub { margin: 2px 0 12px; color: var(--muted); font-size: 12.5px; }
+.span-12 { grid-column: span 12; }
+.span-8 { grid-column: span 8; }
+.span-6 { grid-column: span 6; }
+.span-4 { grid-column: span 4; }
+@media (max-width: 900px) {
+  .span-8, .span-6, .span-4 { grid-column: span 12; }
+}
+.chart-box { position: relative; height: 260px; }
+.chart-box.tall { height: 300px; }
+.chart-box.hero { height: 380px; }
+@media (max-width: 900px) { .chart-box.hero { height: 260px; } }
+
+.legend { display: flex; gap: 14px; margin: -4px 0 10px; color: var(--text-2); font-size: 12.5px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.top { list-style: none; margin: 0; padding: 0; }
+.top li {
+  display: grid; grid-template-columns: 22px 52px 1fr auto; gap: 12px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--grid);
+}
+.top li:first-child { border-top: 0; padding-top: 2px; }
+.top .rank { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.top img, .top .ph {
+  width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--grid);
+}
+.top .cap {
+  color: var(--text); font-size: 13px; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.top .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.top .nums { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+.top .nums b { display: block; font-size: 15px; }
+.top a { color: inherit; text-decoration: none; }
+.top a:hover .cap { text-decoration: underline; }
+
+.notice {
+  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
+  padding: 14px 16px; color: var(--text-2); margin-bottom: 14px; font-size: 13px;
+}
+.notice b { color: var(--text); }
+.empty {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  color: var(--muted); font-size: 13px; text-align: center; padding: 0 20px;
+}
+
+details.table { margin-top: 10px; }
+details.table summary { cursor: pointer; color: var(--text-2); font-size: 12.5px; }
+details.table table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+details.table th, details.table td { text-align: right; padding: 5px 6px; border-top: 1px solid var(--grid); }
+details.table th:first-child, details.table td:first-child { text-align: left; }
+details.table th { color: var(--text-2); font-weight: 500; }
+.table-scroll { max-height: 260px; overflow: auto; }
+
+footer { margin-top: 22px; color: var(--muted); font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="avatar" id="avatar" alt="" hidden>
+    <div class="who">
+      <h1 id="title">Dashboard Instagram</h1>
+      <p id="updated">Carregando dados…</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Período">
+        <button data-days="7">7 dias</button>
+        <button data-days="30" aria-pressed="true">30 dias</button>
+        <button data-days="90">90 dias</button>
+        <button data-days="0">Tudo</button>
+      </div>
+      <button class="icon-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema">◐</button>
+    </div>
+  </header>
+
+  <div id="notice"></div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid">
+    <div class="card span-8">
+      <h2>Evolução de seguidores</h2>
+      <p class="sub">Total de seguidores a cada coleta</p>
+      <div class="chart-box hero"><canvas id="cFollowers"></canvas></div>
+    </div>
+    <div class="card span-4">
+      <h2>Top 5 posts</h2>
+      <p class="sub">Maior engajamento (curtidas + comentários)</p>
+      <ul class="top" id="top"></ul>
+    </div>
+
+    <div class="card span-6">
+      <h2>Novos seguidores por dia</h2>
+      <p class="sub">Saldo diário (ganhos menos perdas)</p>
+      <div class="chart-box"><canvas id="cNewFollowers"></canvas></div>
+      <details class="table"><summary>Ver tabela</summary><div class="table-scroll" id="tDaily"></div></details>
+    </div>
+    <div class="card span-6">
+      <h2>Novas curtidas por dia</h2>
+      <p class="sub">Curtidas recebidas no dia, somando todos os posts acompanhados</p>
+      <div class="chart-box"><canvas id="cNewLikes"></canvas></div>
+    </div>
+
+    <div class="card span-8">
+      <h2>Curtidas e comentários por post</h2>
+      <p class="sub">Últimos 20 posts, do mais antigo ao mais recente</p>
+      <div class="legend">
+        <span><i style="background:var(--s1)"></i>Curtidas</span>
+        <span><i style="background:var(--s2)"></i>Comentários</span>
+      </div>
+      <div class="chart-box tall"><canvas id="cPosts"></canvas></div>
+    </div>
+    <div class="card span-4">
+      <h2>Engajamento por formato</h2>
+      <p class="sub">Média de curtidas + comentários por post</p>
+      <div class="chart-box tall"><canvas id="cFormats"></canvas></div>
+    </div>
+  </section>
+
+  <footer>Dados da Instagram Graph API · atualização automática via GitHub Actions</footer>
+</div>
+
+<script>
+(() => {
+  const TZ = "America/Sao_Paulo";
+  const fmt = new Intl.NumberFormat("pt-BR");
+  const pct = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 2 });
+  const dayKey = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  const dayLabel = key => { const [y, m, d] = key.split("-"); return `${d}/${m}`; };
+  const fmtDateTime = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, dateStyle: "short", timeStyle: "short" }).format(d);
+  const fmtDate = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short" }).format(d);
+  const TYPE_LABEL = { REELS: "Reels", VIDEO: "Vídeo", IMAGE: "Imagem", CAROUSEL_ALBUM: "Carrossel" };
+  const DAY = 864e5;
+
+  let history = [], postsData = null, periodDays = 30, charts = {};
+
+  // Tema salvo (só conveniência local)
+  try {
+    const saved = localStorage.getItem("ig-dash-theme");
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const cur = document.documentElement.dataset.theme
+      || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("ig-dash-theme", next); } catch (e) {}
+    render();
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    periodDays = +b.dataset.days;
+    render();
+  }));
+
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  async function load() {
+    const bust = "?v=" + Date.now();
+    try {
+      const [h, p] = await Promise.all([
+        fetch("data/history.json" + bust).then(r => r.ok ? r.json() : []),
+        fetch("data/posts.json" + bust).then(r => r.ok ? r.json() : null),
+      ]);
+      history = (Array.isArray(h) ? h : []).map(x => ({ ...x, t: new Date(x.ts) })).sort((a, b) => a.t - b.t);
+      postsData = p;
+    } catch (e) {
+      history = []; postsData = null;
+    }
+    render();
+  }
+
+  // Leitura mais próxima de (agora - N dias); null se o histórico não cobre o período
+  function readingAt(msAgo) {
+    if (!history.length) return null;
+    const target = history[history.length - 1].t - msAgo;
+    let best = null;
+    for (const r of history) { if (r.t <= target) best = r; else break; }
+    return best;
+  }
+
+  // Última leitura de cada dia -> diferença em relação ao dia anterior
+  function dailyDeltas(field) {
+    const byDay = new Map();
+    for (const r of history) byDay.set(dayKey(r.t), r);
+    const days = [...byDay.entries()];
+    const out = [];
+    for (let i = 1; i < days.length; i++) {
+      out.push({ day: days[i][0], value: days[i][1][field] - days[i - 1][1][field], total: days[i][1][field] });
+    }
+    return out;
+  }
+
+  function inPeriod(date) {
+    if (!periodDays || !history.length) return true;
+    return date >= history[history.length - 1].t - periodDays * DAY;
+  }
+
+  function deltaHTML(cur, prev, label) {
+    if (prev == null) return `<div class="delta">${label}: aguardando mais coletas</div>`;
+    const d = cur - prev;
+    const cls = d > 0 ? "up" : d < 0 ? "down" : "";
+    const sign = d > 0 ? "▲ +" : d < 0 ? "▼ " : "";
+    return `<div class="delta ${cls}">${sign}${fmt.format(d)} ${label}</div>`;
+  }
+
+  function renderKPIs() {
+    const el = document.getElementById("kpis");
+    const last = history[history.length - 1];
+    const profile = postsData?.profile;
+    if (!last && !profile) { el.innerHTML = ""; return; }
+
+    const followers = last?.followers ?? profile.followers;
+    const r1 = readingAt(DAY), r7 = readingAt(7 * DAY), r30 = readingAt(30 * DAY);
+    const per = periodDays || null;
+    const rP = per ? readingAt(per * DAY) : history[0];
+    const perLabel = per ? `em ${per} dias` : "desde o início";
+
+    const posts = postsData?.posts || [];
+    const cutoff = Date.now() - 30 * DAY;
+    const recent = posts.filter(p => new Date(p.timestamp) >= cutoff);
+    const base = recent.length ? recent : posts.slice(0, 10);
+    const eng = base.length && followers
+      ? base.reduce((s, p) => s + p.likes + p.comments, 0) / base.length / followers : null;
+
+    const newF = rP ? last.followers - rP.followers : null;
+    const newL = rP ? last.likes_gained - rP.likes_gained : null;
+
+    el.innerHTML = `
+      <div class="kpi"><div class="label">Seguidores</div>
+        <div class="value">${fmt.format(followers)}</div>
+        ${deltaHTML(followers, r1?.followers, "nas últimas 24h")}</div>
+      <div class="kpi"><div class="label">Novos seguidores</div>
+        <div class="value">${newF == null ? "—" : (newF > 0 ? "+" : "") + fmt.format(newF)}</div>
+        <div class="delta">${perLabel}${r7 && r30 ? ` · 7d: ${fmt.format(last.followers - r7.followers)} · 30d: ${fmt.format(last.followers - r30.followers)}` : ""}</div></div>
+      <div class="kpi"><div class="label">Novas curtidas</div>
+        <div class="value">${newL == null ? "—" : fmt.format(newL)}</div>
+        <div class="delta">${perLabel}</div></div>
+      <div class="kpi"><div class="label">Engajamento médio por post</div>
+        <div class="value">${eng == null ? "—" : pct.format(eng)}</div>
+        <div class="delta">${recent.length ? `${recent.length} posts nos últimos 30 dias` : "últimos 10 posts"}</div></div>
+      <div class="kpi"><div class="label">Posts</div>
+        <div class="value">${fmt.format(last?.media_count ?? profile.media_count)}</div>
+        <div class="delta">${fmt.format(last?.follows ?? profile.follows)} seguindo</div></div>`;
+  }
+
+  function baseOptions(extra = {}) {
+    const text2 = css("--text-2"), grid = css("--grid"), surface = css("--surface"), text = css("--text");
+    return {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: surface, titleColor: text, bodyColor: text2, borderColor: css("--border"),
+          borderWidth: 1, padding: 10, cornerRadius: 8, displayColors: true, boxPadding: 4,
+          callbacks: { label: c => ` ${c.dataset.label}: ${fmt.format(c.parsed.y ?? c.parsed.x)}` },
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, border: { color: grid }, ticks: { color: text2, maxRotation: 0, autoSkipPadding: 14, font: { size: 11 } } },
+        y: { grid: { color: grid }, border: { display: false }, ticks: { color: text2, font: { size: 11 }, callback: v => fmt.format(v) } },
+      },
+      ...extra,
+    };
+  }
+
+  function chart(id, config, emptyMsg) {
+    const canvas = document.getElementById(id);
+    const box = canvas.parentElement;
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+    box.querySelector(".empty")?.remove();
+    if (!config) {
+      canvas.style.display = "none";
+      box.insertAdjacentHTML("beforeend", `<div class="empty">${emptyMsg}</div>`);
+      return;
+    }
+    canvas.style.display = "";
+    charts[id] = new Chart(canvas, config);
+  }
+
+  function renderFollowers() {
+    const pts = history.filter(r => inPeriod(r.t));
+    const s1 = css("--s1");
+    chart("cFollowers", pts.length < 2 ? null : {
+      type: "line",
+      data: {
+        labels: pts.map(r => fmtDateTime(r.t)),
+        datasets: [{
+          label: "Seguidores", data: pts.map(r => r.followers), borderColor: s1, borderWidth: 2,
+          pointRadius: pts.length > 40 ? 0 : 3, pointHoverRadius: 5, pointBackgroundColor: s1,
+          pointBorderColor: css("--surface"), pointBorderWidth: 2, tension: 0.25, fill: true,
+          backgroundColor: ctx => {
+            const { chart } = ctx; const { ctx: c, chartArea } = chart;
+            if (!chartArea) return "transparent";
+            const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            g.addColorStop(0, s1 + "33"); g.addColorStop(1, s1 + "00"); return g;
+          },
+        }],
+      },
+      options: baseOptions({
+        scales: {
+          ...baseOptions().scales,
+          x: { ...baseOptions().scales.x, ticks: { ...baseOptions().scales.x.ticks, maxTicksLimit: 7, callback(v) { return this.getLabelForValue(v).split(" ")[0].slice(0, 5); } } },
+          y: { ...baseOptions().scales.y, grace: "5%" },
+        },
+      }),
+    }, "O gráfico aparece a partir da 2ª coleta.");
+  }
+
+  function dailyBar(id, field, label, posColor, negColor) {
+    const rows = dailyDeltas(field).filter(r => inPeriod(new Date(r.day + "T12:00:00-03:00")));
+    chart(id, rows.length < 1 ? null : {
+      type: "bar",
+      data: {
+        labels: rows.map(r => dayLabel(r.day)),
+        datasets: [{
+          label, data: rows.map(r => r.value),
+          backgroundColor: rows.map(r => r.value < 0 ? negColor : posColor),
+          borderRadius: 4, borderSkipped: "start", maxBarThickness: 28, categoryPercentage: 0.8, barPercentage: 0.9,
+        }],
+      },
+      options: baseOptions({ interaction: { mode: "index", intersect: false } }),
+    }, "Os dados diários aparecem depois de 2 dias de coleta.");
+    return rows;
+  }
+
+  function renderDailyTable(fRows) {
+    const lRows = new Map(dailyDeltas("likes_gained").map(r => [r.day, r.value]));
+    const el = document.getElementById("tDaily");
+    if (!fRows.length) { el.innerHTML = `<p class="sub" style="margin:8px 0 0">Sem dados ainda.</p>`; return; }
+    el.innerHTML = `<table><thead><tr><th>Dia</th><th>Seguidores</th><th>Saldo</th><th>Novas curtidas</th></tr></thead><tbody>${
+      [...fRows].reverse().map(r => `<tr><td>${dayLabel(r.day)}</td><td>${fmt.format(r.total)}</td><td>${r.value > 0 ? "+" : ""}${fmt.format(r.value)}</td><td>${lRows.has(r.day) ? fmt.format(lRows.get(r.day)) : "—"}</td></tr>`).join("")
+    }</tbody></table>`;
+  }
+
+  function renderPosts() {
+    const posts = (postsData?.posts || []).slice(0, 20).reverse();
+    chart("cPosts", !posts.length ? null : {
+      type: "bar",
+      data: {
+        labels: posts.map(p => fmtDate(new Date(p.timestamp))),
+        datasets: [
+          { label: "Curtidas", data: posts.map(p => p.likes), backgroundColor: css("--s1"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 18, categoryPercentage: 0.75, barPercentage: 0.88 },
+          { label: "Comentários", data: posts.map(p => p.comments), backgroundColor: css("--s2"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 18, categoryPercentage: 0.75, barPercentage: 0.88 },
+        ],
+      },
+      options: baseOptions({
+        plugins: {
+          ...baseOptions().plugins,
+          tooltip: {
+            ...baseOptions().plugins.tooltip,
+            callbacks: {
+              ...baseOptions().plugins.tooltip.callbacks,
+              title: items => {
+                const p = posts[items[0].dataIndex];
+                const cap = (p.caption || "").split("\n")[0];
+                return `${TYPE_LABEL[p.type] || p.type} · ${fmtDate(new Date(p.timestamp))}${cap ? "\n" + (cap.length > 48 ? cap.slice(0, 48) + "…" : cap) : ""}`;
+              },
+            },
+          },
+        },
+        onClick: (e, els) => { if (els.length) window.open(posts[els[0].index].permalink, "_blank", "noopener"); },
+      }),
+    }, "Nenhum post encontrado ainda.");
+  }
+
+  function renderFormats() {
+    const groups = {};
+    for (const p of postsData?.posts || []) {
+      const k = TYPE_LABEL[p.type] || p.type;
+      (groups[k] ||= []).push(p.likes + p.comments);
+    }
+    const rows = Object.entries(groups)
+      .map(([k, v]) => ({ k, avg: v.reduce((a, b) => a + b, 0) / v.length, n: v.length }))
+      .sort((a, b) => b.avg - a.avg);
+    chart("cFormats", !rows.length ? null : {
+      type: "bar",
+      data: {
+        labels: rows.map(r => `${r.k} (${r.n})`),
+        datasets: [{ label: "Média por post", data: rows.map(r => Math.round(r.avg)), backgroundColor: css("--s1"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 30 }],
+      },
+      options: baseOptions({
+        indexAxis: "y",
+        interaction: { mode: "nearest", axis: "y", intersect: false },
+        scales: {
+          x: { ...baseOptions().scales.y },
+          y: { ...baseOptions().scales.x, ticks: { ...baseOptions().scales.x.ticks, color: css("--text") } },
+        },
+      }),
+    }, "Nenhum post encontrado ainda.");
+  }
+
+  function renderTop() {
+    const el = document.getElementById("top");
+    const posts = [...(postsData?.posts || [])].sort((a, b) => (b.likes + b.comments) - (a.likes + a.comments)).slice(0, 5);
+    if (!posts.length) { el.innerHTML = `<li style="display:block;color:var(--muted)">Nenhum post ainda.</li>`; return; }
+    const esc = s => (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    el.innerHTML = posts.map((p, i) => `
+      <li>
+        <span class="rank">${i + 1}</span>
+        <a href="${esc(p.permalink)}" target="_blank" rel="noopener">${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}</a>
+        <a href="${esc(p.permalink)}" target="_blank" rel="noopener">
+          <div class="cap">${esc((p.caption || "Sem legenda").split("\n")[0])}</div>
+          <div class="meta">${TYPE_LABEL[p.type] || p.type} · ${fmtDate(new Date(p.timestamp))}</div>
+        </a>
+        <div class="nums"><b>${fmt.format(p.likes)}</b>${fmt.format(p.comments)} coment.</div>
+      </li>`).join("");
+  }
+
+  function renderHeader() {
+    const p = postsData?.profile;
+    const notice = document.getElementById("notice");
+    if (!p) {
+      document.getElementById("updated").textContent = "Ainda não há dados coletados.";
+      notice.innerHTML = `<div class="notice"><b>Nenhum dado ainda.</b> Rode o workflow “Coletar dados e publicar dashboard” na aba Actions do repositório. Os dados aparecem aqui depois da primeira coleta.</div>`;
+      return;
+    }
+    document.getElementById("title").textContent = "@" + p.username;
+    document.title = `@${p.username} · Dashboard`;
+    const av = document.getElementById("avatar");
+    if (p.picture) { av.src = p.picture; av.hidden = false; av.referrerPolicy = "no-referrer"; av.onerror = () => { av.hidden = true; }; }
+    document.getElementById("updated").textContent =
+      `${p.name ? p.name + " · " : ""}Atualizado em ${fmtDateTime(new Date(postsData.updated_at))} (Brasília)`;
+    const days = history.length ? (history[history.length - 1].t - history[0].t) / DAY : 0;
+    notice.innerHTML = history.length < 2 || days < 1
+      ? `<div class="notice"><b>Coletando histórico.</b> A API do Instagram só informa o total atual, então os ganhos de seguidores e curtidas são calculados entre uma coleta e outra. Os gráficos diários ficam completos depois de alguns dias.</div>`
+      : "";
+  }
+
+  function render() {
+    renderHeader();
+    renderKPIs();
+    renderFollowers();
+    const fRows = dailyBar("cNewFollowers", "followers", "Saldo de seguidores", css("--s1"), css("--neg"));
+    renderDailyTable(fRows);
+    dailyBar("cNewLikes", "likes_gained", "Novas curtidas", css("--s1"), css("--neg"));
+    renderPosts();
+    renderFormats();
+    renderTop();
+  }
+
+  load();
+  setInterval(load, 15 * 60 * 1000); // recarrega a cada 15 min se a aba ficar aberta
+})();
+</script>
+</body>
+</html>
