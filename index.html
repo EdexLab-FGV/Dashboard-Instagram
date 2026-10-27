@@ -3,570 +3,1094 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Instagram</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Painel Instagram</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
+/* ------------------------------------------------------------------ tokens */
 :root {
   color-scheme: light;
-  --bg: #f4f4f2;
-  --surface: #fcfcfb;
-  --border: #e4e3df;
-  --text: #0b0b0b;
-  --text-2: #52514e;
-  --muted: #8a8984;
-  --grid: #ecebe7;
-  --accent: #2a78d6;
-  --s1: #2a78d6;   /* seguidores / curtidas */
-  --s2: #eb6834;   /* comentários */
-  --neg: #e34948;  /* perda de seguidores */
-  --good: #008300;
-  --radius: 14px;
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --border: #e6e8ee;
+  --text: #0f1729;
+  --text-2: #4a5468;
+  --muted: #8a93a6;
+  --grid: #eef0f4;
+  --brand: #0f2b5b;          /* azul institucional */
+  --brand-2: #1d4a94;
+  --on-brand: #ffffff;
+  --on-brand-2: rgba(255,255,255,.72);
+  --s1: #2a78d6;             /* série 1 */
+  --s2: #eb6834;             /* série 2 */
+  --s1-soft: rgba(42,120,214,.12);
+  --good: #0f7b3e; --good-bg: #e5f5ec;
+  --bad: #c43434;  --bad-bg: #fbeaea;
+  --warn: #9a6200; --warn-bg: #fff3d6;
+  --chip: #eef2fb; --chip-text: #1d4a94;
+  --shadow: 0 1px 2px rgba(15,23,41,.04), 0 4px 16px rgba(15,23,41,.05);
+  --radius: 18px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #111110;
-    --surface: #1a1a19;
-    --border: #2c2c2a;
-    --text: #f0efec;
-    --text-2: #c3c2b7;
-    --muted: #8f8e88;
-    --grid: #262624;
-    --accent: #3987e5;
-    --s1: #3987e5;
-    --s2: #d95926;
-    --neg: #e66767;
-    --good: #3fae4a;
+    --bg: #0c111b; --surface: #141a26; --surface-2: #19202e; --border: #252d3d;
+    --text: #eef1f7; --text-2: #b4bccb; --muted: #7d879a; --grid: #212938;
+    --brand: #0f2b5b; --brand-2: #1d4a94;
+    --s1: #3987e5; --s2: #d95926; --s1-soft: rgba(57,135,229,.16);
+    --good: #4cc27c; --good-bg: rgba(76,194,124,.12);
+    --bad: #ef7070; --bad-bg: rgba(239,112,112,.12);
+    --warn: #f0b443; --warn-bg: rgba(240,180,67,.12);
+    --chip: #1d2638; --chip-text: #9cc0f5;
+    --shadow: none;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #111110;
-  --surface: #1a1a19;
-  --border: #2c2c2a;
-  --text: #f0efec;
-  --text-2: #c3c2b7;
-  --muted: #8f8e88;
-  --grid: #262624;
-  --accent: #3987e5;
-  --s1: #3987e5;
-  --s2: #d95926;
-  --neg: #e66767;
-  --good: #3fae4a;
+  --bg: #0c111b; --surface: #141a26; --surface-2: #19202e; --border: #252d3d;
+  --text: #eef1f7; --text-2: #b4bccb; --muted: #7d879a; --grid: #212938;
+  --brand: #0f2b5b; --brand-2: #1d4a94;
+  --s1: #3987e5; --s2: #d95926; --s1-soft: rgba(57,135,229,.16);
+  --good: #4cc27c; --good-bg: rgba(76,194,124,.12);
+  --bad: #ef7070; --bad-bg: rgba(239,112,112,.12);
+  --warn: #f0b443; --warn-bg: rgba(240,180,67,.12);
+  --chip: #1d2638; --chip-text: #9cc0f5;
+  --shadow: none;
 }
 
+/* ------------------------------------------------------------------- base */
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 70px; }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 14px;
-  line-height: 1.45;
-  -webkit-font-smoothing: antialiased;
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 48px; }
+a { color: inherit; }
+button { font: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 
-header {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  margin-bottom: 22px;
+/* --------------------------------------------------------------- lock */
+#lock {
+  min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+  background: radial-gradient(1200px 600px at 20% -10%, var(--brand-2), transparent 60%), var(--brand);
 }
-.avatar {
-  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
-  background: var(--grid); border: 1px solid var(--border); flex: none;
+.lock-card {
+  width: 100%; max-width: 380px; background: var(--surface); border-radius: 22px; padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
 }
-.who { flex: 1; min-width: 180px; }
-.who h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
-.who p { margin: 2px 0 0; color: var(--text-2); font-size: 13px; }
-.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.seg {
-  display: inline-flex; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 10px; padding: 3px;
+.lock-card .icon {
+  width: 46px; height: 46px; border-radius: 14px; background: var(--chip); color: var(--chip-text);
+  display: grid; place-items: center; font-size: 22px; margin-bottom: 14px;
 }
+.lock-card h1 { margin: 0 0 4px; font-size: 20px; }
+.lock-card p { margin: 0 0 18px; color: var(--text-2); font-size: 13.5px; }
+.lock-card input[type=password] {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text); font: inherit; font-size: 15px; outline: none;
+}
+.lock-card input[type=password]:focus { border-color: var(--s1); box-shadow: 0 0 0 3px var(--s1-soft); }
+.lock-card label.remember { display: flex; gap: 8px; align-items: center; margin: 12px 0 16px; color: var(--text-2); font-size: 13px; }
+.btn-primary {
+  width: 100%; border: 0; border-radius: 12px; padding: 12px; background: var(--brand-2); color: #fff;
+  font-weight: 700; cursor: pointer; font-size: 14.5px;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.lock-err { color: var(--bad); font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+/* --------------------------------------------------------------- hero */
+.hero {
+  background: radial-gradient(900px 420px at 85% -20%, var(--brand-2), transparent 70%), var(--brand);
+  color: var(--on-brand); padding: 26px 0 64px;
+}
+.hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.hero .avatar {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none;
+  border: 3px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12);
+}
+.hero h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.hero .sub { color: var(--on-brand-2); font-size: 13px; margin-top: 2px; }
+.hero .who { flex: 1; min-width: 200px; }
+.hero-stats { display: flex; gap: 22px; margin-top: 18px; flex-wrap: wrap; }
+.hero-stats div b { display: block; font-size: 20px; font-weight: 800; }
+.hero-stats div span { color: var(--on-brand-2); font-size: 12.5px; }
+.controls { display: flex; gap: 8px; align-items: center; }
+.seg { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; }
 .seg button {
-  border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 13px;
-  font-weight: 500; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+  border: 0; background: transparent; color: var(--on-brand-2); font-size: 13px; font-weight: 600;
+  padding: 7px 12px; border-radius: 9px; cursor: pointer;
 }
-.seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.seg button[aria-pressed="true"] { background: #fff; color: var(--brand); }
 .icon-btn {
-  border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
-  width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 15px;
+  border: 0; background: rgba(255,255,255,.1); color: #fff; width: 36px; height: 36px;
+  border-radius: 11px; cursor: pointer; font-size: 15px;
 }
 
-.kpis {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px; margin-bottom: 14px;
+/* --------------------------------------------------------------- nav */
+.nav {
+  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
 }
-.kpi {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 16px 16px 14px;
+.nav .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
+.nav a {
+  white-space: nowrap; text-decoration: none; color: var(--text-2); font-weight: 600; font-size: 13px;
+  padding: 7px 12px; border-radius: 10px;
 }
-.kpi .label { color: var(--text-2); font-size: 12.5px; font-weight: 500; }
-.kpi .value {
-  font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px;
-  font-variant-numeric: tabular-nums;
-}
-.kpi .delta { font-size: 12.5px; margin-top: 2px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.delta.up { color: var(--good); }
-.delta.down { color: var(--neg); }
+.nav a:hover { background: var(--surface); color: var(--text); }
 
-.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+main { margin-top: -44px; position: relative; z-index: 1; padding-bottom: 48px; }
+section { margin-top: 28px; }
+section:first-child { margin-top: 0; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 2px 12px; flex-wrap: wrap; }
+.sec-head h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+.sec-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
 .card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 16px; min-width: 0;
+  box-shadow: var(--shadow); padding: 18px; min-width: 0;
 }
-.card h2 { margin: 0; font-size: 14.5px; font-weight: 600; }
-.card .sub { margin: 2px 0 12px; color: var(--muted); font-size: 12.5px; }
-.span-12 { grid-column: span 12; }
-.span-8 { grid-column: span 8; }
-.span-6 { grid-column: span 6; }
-.span-4 { grid-column: span 4; }
-@media (max-width: 900px) {
-  .span-8, .span-6, .span-4 { grid-column: span 12; }
-}
-.chart-box { position: relative; height: 260px; }
-.chart-box.tall { height: 300px; }
-.chart-box.hero { height: 380px; }
-@media (max-width: 900px) { .chart-box.hero { height: 260px; } }
+.card h3 { margin: 0; font-size: 14.5px; font-weight: 700; }
+.card .hint { margin: 2px 0 14px; color: var(--muted); font-size: 12.5px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
+.c12 { grid-column: span 12; } .c8 { grid-column: span 8; } .c7 { grid-column: span 7; }
+.c6 { grid-column: span 6; } .c5 { grid-column: span 5; } .c4 { grid-column: span 4; } .c3 { grid-column: span 3; }
+@media (max-width: 920px) { .c8, .c7, .c6, .c5, .c4, .c3 { grid-column: span 12; } }
 
-.legend { display: flex; gap: 14px; margin: -4px 0 10px; color: var(--text-2); font-size: 12.5px; flex-wrap: wrap; }
+/* --------------------------------------------------------------- summary */
+.summary { display: flex; gap: 16px; align-items: flex-start; }
+.summary .badge {
+  flex: none; width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center;
+  background: var(--chip); color: var(--chip-text); font-size: 20px;
+}
+.summary h3 { font-size: 15px; }
+.summary ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.summary li { color: var(--text-2); font-size: 14px; }
+.summary li b { color: var(--text); }
+
+/* --------------------------------------------------------------- KPIs */
+.kpis { display: grid; gap: 14px; grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1050px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi { padding: 16px 16px 12px; display: flex; flex-direction: column; }
+.kpi .label { color: var(--text-2); font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.kpi .value { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+.kpi .foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.pill { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.up { color: var(--good); background: var(--good-bg); }
+.pill.down { color: var(--bad); background: var(--bad-bg); }
+.pill.flat { color: var(--muted); background: var(--surface-2); }
+.spark { width: 72px; height: 26px; flex: none; }
+.kpi .explain { color: var(--muted); font-size: 11.5px; margin-top: 6px; }
+
+/* --------------------------------------------------------------- charts */
+.chart-box { position: relative; height: 270px; }
+.chart-box.sm { height: 220px; }
+.legend { display: flex; gap: 14px; margin: -6px 0 10px; color: var(--text-2); font-size: 12.5px; flex-wrap: wrap; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.legend i.line { height: 3px; border-radius: 2px; width: 14px; }
+.callout {
+  margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2);
+  color: var(--text-2); font-size: 13px;
+}
+.callout b { color: var(--text); }
+.empty { display: grid; place-items: center; height: 100%; color: var(--muted); font-size: 13px; text-align: center; padding: 0 16px; }
 
-.top { list-style: none; margin: 0; padding: 0; }
-.top li {
-  display: grid; grid-template-columns: 22px 52px 1fr auto; gap: 12px; align-items: center;
-  padding: 10px 0; border-top: 1px solid var(--grid);
+/* --------------------------------------------------------------- posts */
+.tabs { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 3px; flex-wrap: wrap; }
+.tabs button {
+  border: 0; background: transparent; color: var(--text-2); font-size: 12.5px; font-weight: 600;
+  padding: 6px 11px; border-radius: 9px; cursor: pointer;
 }
-.top li:first-child { border-top: 0; padding-top: 2px; }
-.top .rank { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
-.top img, .top .ph {
-  width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--grid);
+.tabs button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.posts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.post { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.post .thumb { position: relative; aspect-ratio: 4 / 5; background: var(--surface-2); overflow: hidden; }
+.post .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post .rank {
+  position: absolute; top: 10px; left: 10px; background: rgba(10,15,25,.72); color: #fff;
+  font-weight: 800; font-size: 12px; border-radius: 8px; padding: 3px 8px; backdrop-filter: blur(4px);
 }
-.top .cap {
-  color: var(--text); font-size: 13px; overflow: hidden; display: -webkit-box;
-  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+.post .type {
+  position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,.92); color: #111;
+  font-weight: 700; font-size: 11px; border-radius: 8px; padding: 3px 8px;
 }
-.top .meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
-.top .nums { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
-.top .nums b { display: block; font-size: 15px; }
-.top a { color: inherit; text-decoration: none; }
-.top a:hover .cap { text-decoration: underline; }
+.post .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.post .cap { font-size: 13px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 39px; }
+.post .meta { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.stats div { background: var(--surface-2); border-radius: 10px; padding: 6px 8px; }
+.stats b { display: block; font-size: 14px; font-weight: 800; }
+.stats span { font-size: 10.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+.stats .hl { background: var(--s1-soft); }
+.stats .hl b { color: var(--s1); }
+.post .actions { display: flex; gap: 8px; margin-top: auto; }
+.btn {
+  flex: 1; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 10px;
+  padding: 7px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.solid { background: var(--brand-2); color: #fff; border-color: transparent; }
+.btn.solid:hover { filter: brightness(1.08); }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--chip-text); }
 
+/* --------------------------------------------------------------- ammo */
+.ammo { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.ammo .card { display: flex; gap: 14px; align-items: stretch; padding: 14px; }
+.ammo img, .ammo .ph { width: 92px; height: 115px; border-radius: 12px; object-fit: cover; background: var(--surface-2); flex: none; }
+.ammo .info { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+.ammo .info p { margin: 0; font-size: 12.5px; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ammo .why { font-size: 12px; color: var(--muted); }
+.ammo .actions { display: flex; gap: 6px; margin-top: auto; }
+.ammo .actions .btn:not(.solid) { flex: 0 0 auto; }
+
+/* --------------------------------------------------------------- table */
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 8px 8px; border-bottom: 1px solid var(--border); }
+table.t td { text-align: right; padding: 10px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+table.t th:first-child, table.t td:first-child { text-align: left; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t td.best { font-weight: 800; color: var(--s1); }
+.compare { display: grid; gap: 10px; }
+.cmp { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px; border-radius: 12px; background: var(--surface-2); }
+.cmp .q { font-weight: 700; font-size: 13px; }
+.cmp .a { font-size: 12.5px; color: var(--text-2); grid-column: 1 / -1; }
+.cmp .pill { align-self: start; }
+
+/* --------------------------------------------------------------- people */
+.people { display: grid; gap: 0; }
+.person { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; padding: 12px 0; border-top: 1px solid var(--grid); align-items: start; }
+.person:first-child { border-top: 0; padding-top: 4px; }
+.av {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 800;
+  font-size: 15px; color: #fff; text-transform: uppercase;
+}
+.person .name { font-weight: 700; font-size: 13.5px; text-decoration: none; }
+.person .name:hover { text-decoration: underline; }
+.person .txt { font-size: 13px; color: var(--text-2); margin-top: 2px; word-break: break-word; }
+.person .sm { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.person img.mini { width: 42px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--surface-2); }
+.chip-i { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); }
+.chip-n { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--good-bg); color: var(--good); }
+.chip-g { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.fan-count { text-align: right; }
+.fan-count b { display: block; font-size: 18px; font-weight: 800; }
+.fan-count span { font-size: 11.5px; color: var(--muted); }
 .notice {
-  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
-  padding: 14px 16px; color: var(--text-2); margin-bottom: 14px; font-size: 13px;
+  border: 1px dashed var(--border); border-radius: var(--radius); padding: 16px; color: var(--text-2);
+  font-size: 13.5px; background: var(--surface);
 }
 .notice b { color: var(--text); }
-.empty {
-  display: flex; align-items: center; justify-content: center; height: 100%;
-  color: var(--muted); font-size: 13px; text-align: center; padding: 0 20px;
+.more { margin-top: 10px; }
+
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(90px, 38%) 1fr 54px; gap: 10px; align-items: center; font-size: 13px; }
+.bar-row .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.bar-row .track { height: 10px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.bar-row .fill { height: 100%; background: var(--s1); border-radius: 6px; }
+.bar-row .v { text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.split { display: flex; height: 14px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 8px 0 10px; }
+.split div:first-child { background: var(--s1); }
+.split div:last-child { background: var(--s2); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--text); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-weight: 600;
+  font-size: 13px; transition: .2s; pointer-events: none; z-index: 50;
 }
-
-details.table { margin-top: 10px; }
-details.table summary { cursor: pointer; color: var(--text-2); font-size: 12.5px; }
-details.table table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
-details.table th, details.table td { text-align: right; padding: 5px 6px; border-top: 1px solid var(--grid); }
-details.table th:first-child, details.table td:first-child { text-align: left; }
-details.table th { color: var(--text-2); font-weight: 500; }
-.table-scroll { max-height: 260px; overflow: auto; }
-
-footer { margin-top: 22px; color: var(--muted); font-size: 12px; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 36px; }
+[hidden] { display: none !important; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <img class="avatar" id="avatar" alt="" hidden>
-    <div class="who">
-      <h1 id="title">Dashboard Instagram</h1>
-      <p id="updated">Carregando dados…</p>
-    </div>
-    <div class="controls">
-      <div class="seg" role="group" aria-label="Período">
-        <button data-days="7">7 dias</button>
-        <button data-days="30" aria-pressed="true">30 dias</button>
-        <button data-days="90">90 dias</button>
-        <button data-days="0">Tudo</button>
+
+<!-- ======================================================== tela de senha -->
+<div id="lock" hidden>
+  <form class="lock-card" id="lockForm">
+    <div class="icon">🔒</div>
+    <h1>Painel do Instagram</h1>
+    <p>Este painel mostra dados de pessoas e é protegido. Digite a senha para continuar.</p>
+    <input type="password" id="pass" placeholder="Senha" autocomplete="current-password" required>
+    <label class="remember"><input type="checkbox" id="remember"> Lembrar neste aparelho</label>
+    <button class="btn-primary" type="submit" id="unlockBtn">Entrar</button>
+    <div class="lock-err" id="lockErr"></div>
+  </form>
+</div>
+
+<!-- ============================================================ painel -->
+<div id="app" hidden>
+  <header class="hero">
+    <div class="wrap">
+      <div class="hero-top">
+        <img class="avatar" id="avatar" alt="" hidden>
+        <div class="who">
+          <h1 id="title">Painel do Instagram</h1>
+          <div class="sub" id="updated"></div>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Período">
+            <button data-days="7">7 dias</button>
+            <button data-days="30" aria-pressed="true">30 dias</button>
+            <button data-days="90">90 dias</button>
+          </div>
+          <button class="icon-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        </div>
       </div>
-      <button class="icon-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema">◐</button>
+      <div class="hero-stats" id="heroStats"></div>
     </div>
   </header>
 
-  <div id="notice"></div>
+  <nav class="nav"><div class="wrap">
+    <a href="#resumo">Resumo</a>
+    <a href="#interesse">Interesse</a>
+    <a href="#procura">Posts que geram procura</a>
+    <a href="#municao">Para o comercial</a>
+    <a href="#pessoas">Pessoas</a>
+    <a href="#quando">Quando postar</a>
+    <a href="#funciona">O que funciona</a>
+    <a href="#publico">Público</a>
+  </div></nav>
 
-  <section class="kpis" id="kpis"></section>
-
-  <section class="grid">
-    <div class="card span-8">
-      <h2>Evolução de seguidores</h2>
-      <p class="sub">Total de seguidores a cada coleta</p>
-      <div class="chart-box hero"><canvas id="cFollowers"></canvas></div>
-    </div>
-    <div class="card span-4">
-      <h2>Top 5 posts</h2>
-      <p class="sub">Maior engajamento (curtidas + comentários)</p>
-      <ul class="top" id="top"></ul>
-    </div>
-
-    <div class="card span-6">
-      <h2>Novos seguidores por dia</h2>
-      <p class="sub">Saldo diário (ganhos menos perdas)</p>
-      <div class="chart-box"><canvas id="cNewFollowers"></canvas></div>
-      <details class="table"><summary>Ver tabela</summary><div class="table-scroll" id="tDaily"></div></details>
-    </div>
-    <div class="card span-6">
-      <h2>Novas curtidas por dia</h2>
-      <p class="sub">Curtidas recebidas no dia, somando todos os posts acompanhados</p>
-      <div class="chart-box"><canvas id="cNewLikes"></canvas></div>
-    </div>
-
-    <div class="card span-8">
-      <h2>Curtidas e comentários por post</h2>
-      <p class="sub">Últimos 20 posts, do mais antigo ao mais recente</p>
-      <div class="legend">
-        <span><i style="background:var(--s1)"></i>Curtidas</span>
-        <span><i style="background:var(--s2)"></i>Comentários</span>
+  <main class="wrap">
+    <section id="resumo">
+      <div class="card summary">
+        <div class="badge">✦</div>
+        <div><h3 id="sumTitle">Resumo</h3><ul id="sumList"></ul></div>
       </div>
-      <div class="chart-box tall"><canvas id="cPosts"></canvas></div>
-    </div>
-    <div class="card span-4">
-      <h2>Engajamento por formato</h2>
-      <p class="sub">Média de curtidas + comentários por post</p>
-      <div class="chart-box tall"><canvas id="cFormats"></canvas></div>
-    </div>
-  </section>
+      <div class="kpis" id="kpis" style="margin-top:14px"></div>
+    </section>
 
-  <footer>Dados da Instagram Graph API · atualização automática via GitHub Actions</footer>
+    <section id="interesse">
+      <div class="sec-head"><div><h2>Termômetro de interesse</h2><p>Gente indo atrás da EdexLab: visitas ao perfil e cliques no link da bio</p></div></div>
+      <div class="grid">
+        <div class="card c8">
+          <h3>Visitas ao perfil e cliques no link, por dia</h3>
+          <p class="hint">Picos indicam dias com mais procura. Bom momento para o comercial reforçar o contato.</p>
+          <div class="legend"><span><i style="background:var(--s1)"></i>Visitas ao perfil</span><span><i class="line" style="background:var(--s2)"></i>Cliques no link</span></div>
+          <div class="chart-box"><canvas id="cInterest"></canvas></div>
+          <div class="callout" id="interestCallout" hidden></div>
+        </div>
+        <div class="card c4">
+          <h3>Crescimento de seguidores</h3>
+          <p class="hint" id="followHint">Saldo diário (entraram menos saíram)</p>
+          <div class="chart-box sm"><canvas id="cFollows"></canvas></div>
+          <div class="callout" id="followCallout" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="procura">
+      <div class="sec-head">
+        <div><h2>Posts que geram procura</h2><p id="procuraHint">Ordenados pelo que mais levou pessoas ao perfil, não só por curtidas</p></div>
+        <div class="tabs" id="sortTabs">
+          <button data-sort="procura" aria-pressed="true">Procura</button>
+          <button data-sort="reach">Alcance</button>
+          <button data-sort="saved">Salvos</button>
+          <button data-sort="shares">Compart.</button>
+          <button data-sort="eng">Curtidas</button>
+        </div>
+      </div>
+      <div class="posts" id="posts"></div>
+    </section>
+
+    <section id="municao">
+      <div class="sec-head"><div><h2>Para o comercial: conteúdos para mandar aos leads</h2><p>O melhor post de cada tema, com mensagem pronta para colar no WhatsApp</p></div></div>
+      <div class="ammo" id="ammo"></div>
+    </section>
+
+    <section id="pessoas">
+      <div class="sec-head"><div><h2>Pessoas</h2><p>Quem está interagindo com a EdexLab nos comentários</p></div></div>
+      <div id="peopleWrap"></div>
+    </section>
+
+    <section id="quando">
+      <div class="sec-head"><div><h2>Quando postar</h2><p>Alcance médio dos seus posts, por dia e horário de publicação (todos os posts acompanhados)</p></div></div>
+      <div class="grid">
+        <div class="card c6"><h3>Por dia da semana</h3><p class="hint">Alcance médio por post</p><div class="chart-box sm"><canvas id="cWeekday"></canvas></div></div>
+        <div class="card c6"><h3>Por horário</h3><p class="hint">Alcance médio por post</p><div class="chart-box sm"><canvas id="cHour"></canvas></div></div>
+        <div class="c12"><div class="callout" id="whenCallout" style="margin:0"></div></div>
+      </div>
+    </section>
+
+    <section id="funciona">
+      <div class="sec-head"><div><h2>O que funciona</h2><p>Comparações feitas com os seus próprios posts</p></div></div>
+      <div class="grid">
+        <div class="card c7">
+          <h3>Desempenho por formato</h3><p class="hint">Média por post · em destaque o melhor de cada coluna</p>
+          <div style="overflow-x:auto"><table class="t" id="formatTable"></table></div>
+        </div>
+        <div class="card c5">
+          <h3>Detalhes que fazem diferença</h3><p class="hint">Alcance médio de posts com e sem cada característica</p>
+          <div class="compare" id="compare"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="publico">
+      <div class="sec-head"><div><h2>Público</h2><p>Quem são os seguidores da conta</p></div></div>
+      <div class="grid">
+        <div class="card c5"><h3>Cidades</h3><p class="hint">Onde estão os seguidores</p><div class="bars" id="cities"></div></div>
+        <div class="card c4"><h3>Faixa etária</h3><p class="hint">Seguidores por idade</p><div class="bars" id="ages"></div></div>
+        <div class="card c3" id="genderCard"><h3>Gênero e alcance</h3><p class="hint">Seguidores e alcance dos últimos 28 dias</p><div id="gender"></div></div>
+      </div>
+    </section>
+
+    <footer>Dados oficiais da Instagram Graph API · atualizado automaticamente a cada 6 horas</footer>
+  </main>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 (() => {
+  // ---------------------------------------------------------------- config
+  // Temas usados na seção "Para o comercial". Cada post entra no PRIMEIRO tema que bater,
+  // então deixe os temas mais genéricos por último. Edite as palavras-chave à vontade.
+  const THEMES = [
+    { name: "Depoimentos de alunos", rx: /depoimento|aluno|aluna|ex-alun|egress|hist[óo]ria d|conquist|formou|formatura|turma/i },
+    { name: "Eventos e aulas abertas", rx: /\blive\b|evento|webinar|palestra|workshop|aula aberta|encontro|masterclass|inscreva/i },
+    { name: "Carreira e mercado", rx: /carreira|mercado|emprego|empregabilidade|sal[áa]rio|promo[çc][ãa]o|lideran[çc]a|gest[ãa]o|profission|recrutador|curr[íi]culo/i },
+    { name: "Sobre o MBA", rx: /\bmba\b|curso|disciplina|grade|metodologia|semipresencial|certificad|diploma|coordena|professor|docente|inscri|matr[íi]cul/i },
+    { name: "Dicas e conteúdo", rx: /dica|aprenda|passo a passo|como |erro|guia|tend[êe]ncia|\bia\b|intelig[êe]ncia artificial/i },
+  ];
+  const MSG_TEMPLATE = (theme, link) =>
+    `Oi! Separei um conteúdo nosso que tem tudo a ver com o que conversamos (${theme.toLowerCase()}). Dá uma olhada: ${link}`;
+
   const TZ = "America/Sao_Paulo";
-  const fmt = new Intl.NumberFormat("pt-BR");
-  const pct = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 2 });
-  const dayKey = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-  const dayLabel = key => { const [y, m, d] = key.split("-"); return `${d}/${m}`; };
-  const fmtDateTime = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, dateStyle: "short", timeStyle: "short" }).format(d);
-  const fmtDate = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short" }).format(d);
-  const TYPE_LABEL = { REELS: "Reels", VIDEO: "Vídeo", IMAGE: "Imagem", CAROUSEL_ALBUM: "Carrossel" };
   const DAY = 864e5;
+  const fmt = new Intl.NumberFormat("pt-BR");
+  const fmt1 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
+  const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+  const dateKey = d => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  const fmtDT = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, dateStyle: "short", timeStyle: "short" }).format(d);
+  const fmtD = d => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, day: "2-digit", month: "short" }).format(d).replace(".", "");
+  const dayLbl = k => { const [, m, d] = k.split("-"); return `${d}/${m}`; };
+  const localParts = d => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "numeric", hourCycle: "h23" }).formatToParts(d).map(x => [x.type, x.value]));
+    return { wd: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(p.weekday), h: +p.hour };
+  };
+  const TYPE = { REELS: "Reels", VIDEO: "Vídeo", IMAGE: "Imagem", CAROUSEL_ALBUM: "Carrossel" };
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const firstLine = s => (s || "").split("\n").find(l => l.trim()) || "";
+  const clip = (s, n) => s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
+  const pctChange = (a, b) => (b ? (a - b) / b : null);
 
-  let history = [], postsData = null, periodDays = 30, charts = {};
+  if (window.Chart) { Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif"; }
+  let S = null;            // estado completo
+  let periodDays = 30;
+  let sortKey = "procura";
+  let charts = {};
 
-  // Tema salvo (só conveniência local)
-  try {
-    const saved = localStorage.getItem("ig-dash-theme");
-    if (saved) document.documentElement.dataset.theme = saved;
-  } catch (e) {}
+  // ------------------------------------------------------------- theme
+  try { const t = localStorage.getItem("ig-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
   document.getElementById("themeBtn").addEventListener("click", () => {
-    const cur = document.documentElement.dataset.theme
-      || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     const next = cur === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("ig-dash-theme", next); } catch (e) {}
-    render();
+    try { localStorage.setItem("ig-theme", next); } catch (e) {}
+    if (S) render();
   });
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => S && render());
 
   document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
     document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
-    periodDays = +b.dataset.days;
-    render();
+    periodDays = +b.dataset.days; render();
+  }));
+  document.querySelectorAll("#sortTabs button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#sortTabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    sortKey = b.dataset.sort; renderPosts();
   }));
 
-  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-
-  async function load() {
-    const bust = "?v=" + Date.now();
-    try {
-      const [h, p] = await Promise.all([
-        fetch("data/history.json" + bust).then(r => r.ok ? r.json() : []),
-        fetch("data/posts.json" + bust).then(r => r.ok ? r.json() : null),
-      ]);
-      history = (Array.isArray(h) ? h : []).map(x => ({ ...x, t: new Date(x.ts) })).sort((a, b) => a.t - b.t);
-      postsData = p;
-    } catch (e) {
-      history = []; postsData = null;
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const ta = Object.assign(document.createElement("textarea"), { value: text });
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
     }
+    toast("Copiado!");
+  }
+  document.addEventListener("click", e => {
+    const el = e.target.closest("[data-copy]");
+    if (el) { e.preventDefault(); copy(el.dataset.copy); }
+  });
+
+  // ------------------------------------------------------------- decrypt
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  async function decrypt(env, pass) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(env.salt), iterations: env.iter, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(env.iv) }, key, b64(env.data));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  async function boot() {
+    const bust = "?v=" + Date.now();
+    let enc = null, plain = null;
+    try { const r = await fetch("data/state.enc.json" + bust); if (r.ok) enc = await r.json(); } catch (e) {}
+    if (!enc) {
+      try { const r = await fetch("data/state.json" + bust); if (r.ok) plain = await r.json(); } catch (e) {}
+    }
+    if (enc) {
+      let saved = null;
+      try { saved = localStorage.getItem("ig-pass") || sessionStorage.getItem("ig-pass"); } catch (e) {}
+      if (saved) {
+        try { start(await decrypt(enc, saved)); return; } catch (e) { try { localStorage.removeItem("ig-pass"); } catch (x) {} }
+      }
+      const lock = document.getElementById("lock"); lock.hidden = false;
+      document.getElementById("pass").focus();
+      document.getElementById("lockForm").addEventListener("submit", async ev => {
+        ev.preventDefault();
+        const pass = document.getElementById("pass").value;
+        const btn = document.getElementById("unlockBtn"), err = document.getElementById("lockErr");
+        btn.textContent = "Abrindo…"; err.textContent = "";
+        try {
+          const data = await decrypt(enc, pass);
+          try {
+            if (document.getElementById("remember").checked) localStorage.setItem("ig-pass", pass);
+            else sessionStorage.setItem("ig-pass", pass);
+          } catch (e) {}
+          lock.hidden = true; start(data);
+        } catch (e) { err.textContent = "Senha incorreta."; btn.textContent = "Entrar"; }
+      });
+      return;
+    }
+    start(plain);
+  }
+
+  function start(data) {
+    S = data || { posts: [], history: [], daily: {}, comments: [], flags: {} };
+    document.getElementById("app").hidden = false;
     render();
   }
 
-  // Leitura mais próxima de (agora - N dias); null se o histórico não cobre o período
-  function readingAt(msAgo) {
-    if (!history.length) return null;
-    const target = history[history.length - 1].t - msAgo;
+  // ------------------------------------------------------------- helpers
+  const posts = () => S.posts || [];
+  const ins = (p, k) => (p.insights && typeof p.insights[k] === "number") ? p.insights[k] : null;
+  const hasIns = k => posts().some(p => ins(p, k) != null);
+  const engagement = p => (p.likes || 0) + (p.comments || 0);
+  const procura = p => {
+    const v = ins(p, "profile_visits"), f = ins(p, "follows");
+    if (v == null && f == null) return null;
+    return (v || 0) + 3 * (f || 0);
+  };
+  const reachOf = p => ins(p, "reach");
+  const postDate = p => new Date(p.timestamp);
+  const lastUpdate = () => S.updated_at ? new Date(S.updated_at) : new Date();
+
+  function dailyRows() {
+    return Object.entries(S.daily || {}).sort(([a], [b]) => a < b ? -1 : 1).map(([k, v]) => ({ day: k, ...v }));
+  }
+  // soma de uma métrica diária numa janela [inicio, fim) em dias atrás
+  function sumDaily(metric, fromDaysAgo, toDaysAgo) {
+    const end = lastUpdate().getTime();
+    let sum = 0, n = 0;
+    for (const r of dailyRows()) {
+      const t = new Date(r.day + "T12:00:00-03:00").getTime();
+      const ago = (end - t) / DAY;
+      if (ago <= fromDaysAgo && ago > toDaysAgo && typeof r[metric] === "number") { sum += r[metric]; n++; }
+    }
+    return { sum, n };
+  }
+  function periodCompare(metric) {
+    const cur = sumDaily(metric, periodDays, 0), prev = sumDaily(metric, periodDays * 2, periodDays);
+    if (!cur.n) return null;
+    return { value: cur.sum, prev: prev.n >= Math.min(periodDays, cur.n) * 0.6 ? prev.sum : null, series: seriesDaily(metric) };
+  }
+  function seriesDaily(metric) {
+    const end = lastUpdate().getTime();
+    return dailyRows().filter(r => (end - new Date(r.day + "T12:00:00-03:00").getTime()) / DAY <= periodDays && typeof r[metric] === "number").map(r => r[metric]);
+  }
+  function historyAt(msAgo) {
+    const h = S.history || [];
+    if (!h.length) return null;
+    const target = new Date(h[h.length - 1].ts).getTime() - msAgo;
     let best = null;
-    for (const r of history) { if (r.t <= target) best = r; else break; }
+    for (const r of h) { if (new Date(r.ts).getTime() <= target) best = r; else break; }
     return best;
   }
-
-  // Última leitura de cada dia -> diferença em relação ao dia anterior
-  function dailyDeltas(field) {
-    const byDay = new Map();
-    for (const r of history) byDay.set(dayKey(r.t), r);
-    const days = [...byDay.entries()];
-    const out = [];
-    for (let i = 1; i < days.length; i++) {
-      out.push({ day: days[i][0], value: days[i][1][field] - days[i - 1][1][field], total: days[i][1][field] });
+  function followersGained() {
+    const f = periodCompare("follows"), u = periodCompare("unfollows");
+    if (f && u) {
+      const pf = sumDaily("follows", periodDays * 2, periodDays), pu = sumDaily("unfollows", periodDays * 2, periodDays);
+      const net = dailyRows().map(r => (r.follows || 0) - (r.unfollows || 0));
+      return { value: f.value - u.value, prev: pf.n ? pf.sum - pu.sum : null, series: net.slice(-periodDays), gross: f.value, lost: u.value };
     }
-    return out;
+    const h = S.history || [];
+    const last = h[h.length - 1], a = historyAt(periodDays * DAY), b = historyAt(2 * periodDays * DAY);
+    if (!last || !a) return null;
+    return { value: last.followers - a.followers, prev: b ? a.followers - b.followers : null, series: [] };
+  }
+  const postsInPeriod = () => {
+    const end = lastUpdate().getTime();
+    return posts().filter(p => end - postDate(p).getTime() <= periodDays * DAY);
+  };
+
+  // ------------------------------------------------------------- render
+  function render() {
+    renderHeader();
+    renderKPIs();
+    renderSummary();
+    renderInterest();
+    renderFollows();
+    renderPosts();
+    renderAmmo();
+    renderPeople();
+    renderWhen();
+    renderWorks();
+    renderAudience();
   }
 
-  function inPeriod(date) {
-    if (!periodDays || !history.length) return true;
-    return date >= history[history.length - 1].t - periodDays * DAY;
+  function renderHeader() {
+    const p = S.profile || {};
+    if (p.username) {
+      document.getElementById("title").textContent = p.name || "@" + p.username;
+      document.title = `@${p.username} · Painel`;
+    }
+    const av = document.getElementById("avatar");
+    if (p.picture) { av.src = p.picture; av.referrerPolicy = "no-referrer"; av.hidden = false; av.onerror = () => av.hidden = true; }
+    document.getElementById("updated").textContent = S.updated_at
+      ? `@${p.username || ""} · atualizado em ${fmtDT(new Date(S.updated_at))}`
+      : "Ainda não há dados. Rode o workflow na aba Actions do GitHub.";
+    const hs = document.getElementById("heroStats");
+    hs.innerHTML = p.username ? `
+      <div><b class="num">${fmt.format(p.followers)}</b><span>seguidores</span></div>
+      <div><b class="num">${fmt.format(p.media_count)}</b><span>publicações</span></div>
+      <div><b class="num">${fmt.format(p.follows)}</b><span>seguindo</span></div>` : "";
   }
 
-  function deltaHTML(cur, prev, label) {
-    if (prev == null) return `<div class="delta">${label}: aguardando mais coletas</div>`;
-    const d = cur - prev;
-    const cls = d > 0 ? "up" : d < 0 ? "down" : "";
-    const sign = d > 0 ? "▲ +" : d < 0 ? "▼ " : "";
-    return `<div class="delta ${cls}">${sign}${fmt.format(d)} ${label}</div>`;
+  function spark(series, color) {
+    if (!series || series.length < 2) return "";
+    const w = 72, h = 26, min = Math.min(...series), max = Math.max(...series), r = max - min || 1;
+    const pts = series.map((v, i) => `${(i / (series.length - 1)) * (w - 2) + 1},${h - 2 - ((v - min) / r) * (h - 4)}`).join(" ");
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts}"/></svg>`;
+  }
+  function deltaPill(cur, prev) {
+    if (prev == null || cur == null) return `<span class="pill flat">sem comparação</span>`;
+    const ch = pctChange(cur, prev);
+    if (ch == null) return `<span class="pill flat">novo</span>`;
+    if (Math.abs(ch) < 0.005) return `<span class="pill flat">estável</span>`;
+    return `<span class="pill ${ch > 0 ? "up" : "down"}">${ch > 0 ? "▲" : "▼"} ${fmt1.format(Math.abs(ch * 100))}%</span>`;
   }
 
   function renderKPIs() {
-    const el = document.getElementById("kpis");
-    const last = history[history.length - 1];
-    const profile = postsData?.profile;
-    if (!last && !profile) { el.innerHTML = ""; return; }
-
-    const followers = last?.followers ?? profile.followers;
-    const r1 = readingAt(DAY), r7 = readingAt(7 * DAY), r30 = readingAt(30 * DAY);
-    const per = periodDays || null;
-    const rP = per ? readingAt(per * DAY) : history[0];
-    const perLabel = per ? `em ${per} dias` : "desde o início";
-
-    const posts = postsData?.posts || [];
-    const cutoff = Date.now() - 30 * DAY;
-    const recent = posts.filter(p => new Date(p.timestamp) >= cutoff);
-    const base = recent.length ? recent : posts.slice(0, 10);
-    const eng = base.length && followers
-      ? base.reduce((s, p) => s + p.likes + p.comments, 0) / base.length / followers : null;
-
-    const newF = rP ? last.followers - rP.followers : null;
-    const newL = rP ? last.likes_gained - rP.likes_gained : null;
-
-    el.innerHTML = `
-      <div class="kpi"><div class="label">Seguidores</div>
-        <div class="value">${fmt.format(followers)}</div>
-        ${deltaHTML(followers, r1?.followers, "nas últimas 24h")}</div>
-      <div class="kpi"><div class="label">Novos seguidores</div>
-        <div class="value">${newF == null ? "—" : (newF > 0 ? "+" : "") + fmt.format(newF)}</div>
-        <div class="delta">${perLabel}${r7 && r30 ? ` · 7d: ${fmt.format(last.followers - r7.followers)} · 30d: ${fmt.format(last.followers - r30.followers)}` : ""}</div></div>
-      <div class="kpi"><div class="label">Novas curtidas</div>
-        <div class="value">${newL == null ? "—" : fmt.format(newL)}</div>
-        <div class="delta">${perLabel}</div></div>
-      <div class="kpi"><div class="label">Engajamento médio por post</div>
-        <div class="value">${eng == null ? "—" : pct.format(eng)}</div>
-        <div class="delta">${recent.length ? `${recent.length} posts nos últimos 30 dias` : "últimos 10 posts"}</div></div>
-      <div class="kpi"><div class="label">Posts</div>
-        <div class="value">${fmt.format(last?.media_count ?? profile.media_count)}</div>
-        <div class="delta">${fmt.format(last?.follows ?? profile.follows)} seguindo</div></div>`;
+    const s1 = css("--s1");
+    const k = [
+      { label: "Pessoas alcançadas", d: periodCompare("reach"), explain: "Contas diferentes que viram algo da EdexLab" },
+      { label: "Visitas ao perfil", d: periodCompare("profile_views"), explain: "Quem foi conferir a página da EdexLab" },
+      { label: "Cliques no link da bio", d: periodCompare("website_clicks"), explain: "Quem saiu do Instagram para o site" },
+      { label: "Novos seguidores", d: followersGained(), explain: "Saldo: quem entrou menos quem saiu", sign: true },
+      { label: "Contas que interagiram", d: periodCompare("accounts_engaged"), explain: "Curtiram, comentaram, salvaram ou compartilharam" },
+    ];
+    document.getElementById("kpis").innerHTML = k.map(x => `
+      <div class="card kpi">
+        <div class="label">${x.label}</div>
+        <div class="value num">${x.d ? (x.sign && x.d.value > 0 ? "+" : "") + fmt.format(x.d.value) : "—"}</div>
+        <div class="foot">${x.d ? deltaPill(x.d.value, x.d.prev) : `<span class="pill flat">sem dados</span>`}${x.d ? spark(x.d.series, s1) : ""}</div>
+        <div class="explain">${x.explain}${x.d && x.d.prev != null ? ` · vs ${periodDays} dias anteriores` : ""}</div>
+      </div>`).join("");
   }
 
-  function baseOptions(extra = {}) {
-    const text2 = css("--text-2"), grid = css("--grid"), surface = css("--surface"), text = css("--text");
-    return {
+  function renderSummary() {
+    const out = [];
+    const r = periodCompare("reach"), v = periodCompare("profile_views"), c = periodCompare("website_clicks"), f = followersGained();
+    const ch = d => d && d.prev ? pctChange(d.value, d.prev) : null;
+    const word = x => x > 0 ? `<b>${fmt1.format(x * 100)}% a mais</b>` : `<b>${fmt1.format(-x * 100)}% a menos</b>`;
+    if (r) out.push(`A conta alcançou <b>${fmt.format(r.value)} pessoas</b>${ch(r) != null ? `, ${word(ch(r))} que no período anterior` : ""}.`);
+    if (v) out.push(`<b>${fmt.format(v.value)} visitas ao perfil</b>${c ? ` e <b>${fmt.format(c.value)} cliques no link da bio</b>` : ""}${ch(v) != null ? ` (visitas: ${word(ch(v))})` : ""}.`);
+    if (f) out.push(`Saldo de <b>${f.value >= 0 ? "+" : ""}${fmt.format(f.value)} seguidores</b>${f.gross != null ? ` (${fmt.format(f.gross)} entraram, ${fmt.format(f.lost)} saíram)` : ""}.`);
+    const pp = postsInPeriod().filter(p => procura(p) != null).sort((a, b) => procura(b) - procura(a))[0];
+    if (pp && ins(pp, "profile_visits")) out.push(`O post que mais levou gente ao perfil foi <b>“${esc(clip(firstLine(pp.caption) || "sem legenda", 60))}”</b> (${TYPE[pp.type] || pp.type}, ${fmtD(postDate(pp))}), com <b>${fmt.format(ins(pp, "profile_visits"))} visitas</b>.`);
+    else {
+      const pe = postsInPeriod().sort((a, b) => engagement(b) - engagement(a))[0];
+      if (pe) out.push(`O post com mais interações foi <b>“${esc(clip(firstLine(pe.caption) || "sem legenda", 60))}”</b> (${fmt.format(engagement(pe))} curtidas e comentários).`);
+    }
+    if (S.flags?.comments === "ok") {
+      const leads = commentsInPeriod().filter(x => x.intent && x.intent.length);
+      if (leads.length) out.push(`<b>${leads.length} comentário${leads.length > 1 ? "s" : ""} com cara de interesse comercial</b>. Veja em <a href="#pessoas">Pessoas</a>.`);
+    }
+    if (!out.length) out.push("Os dados aparecem aqui depois da primeira coleta.");
+    document.getElementById("sumTitle").textContent = `Resumo dos últimos ${periodDays} dias`;
+    document.getElementById("sumList").innerHTML = out.map(x => `<li>${x}</li>`).join("");
+  }
+
+  // ---------------------------------------------------------- charts
+  function baseOpts(extra = {}) {
+    const t2 = css("--text-2"), grid = css("--grid");
+    return Object.assign({
       responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
       interaction: { mode: "index", intersect: false },
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: surface, titleColor: text, bodyColor: text2, borderColor: css("--border"),
-          borderWidth: 1, padding: 10, cornerRadius: 8, displayColors: true, boxPadding: 4,
+          backgroundColor: css("--surface"), titleColor: css("--text"), bodyColor: t2, borderColor: css("--border"),
+          borderWidth: 1, padding: 10, cornerRadius: 10, boxPadding: 4,
           callbacks: { label: c => ` ${c.dataset.label}: ${fmt.format(c.parsed.y ?? c.parsed.x)}` },
         },
       },
       scales: {
-        x: { grid: { display: false }, border: { color: grid }, ticks: { color: text2, maxRotation: 0, autoSkipPadding: 14, font: { size: 11 } } },
-        y: { grid: { color: grid }, border: { display: false }, ticks: { color: text2, font: { size: 11 }, callback: v => fmt.format(v) } },
+        x: { grid: { display: false }, border: { color: grid }, ticks: { color: t2, maxRotation: 0, autoSkipPadding: 12, font: { size: 11 } } },
+        y: { grid: { color: grid }, border: { display: false }, beginAtZero: true, ticks: { color: t2, font: { size: 11 }, callback: v => compact.format(v), maxTicksLimit: 6 } },
       },
-      ...extra,
-    };
+    }, extra);
   }
-
-  function chart(id, config, emptyMsg) {
-    const canvas = document.getElementById(id);
-    const box = canvas.parentElement;
+  function chart(id, cfg, emptyMsg) {
+    const cv = document.getElementById(id), box = cv.parentElement;
     if (charts[id]) { charts[id].destroy(); delete charts[id]; }
     box.querySelector(".empty")?.remove();
-    if (!config) {
-      canvas.style.display = "none";
-      box.insertAdjacentHTML("beforeend", `<div class="empty">${emptyMsg}</div>`);
-      return;
-    }
-    canvas.style.display = "";
-    charts[id] = new Chart(canvas, config);
+    if (!cfg) { cv.style.display = "none"; box.insertAdjacentHTML("beforeend", `<div class="empty">${emptyMsg}</div>`); return; }
+    cv.style.display = ""; charts[id] = new Chart(cv, cfg);
+  }
+  const barDs = (label, data, color, extra = {}) => Object.assign({ type: "bar", label, data, backgroundColor: color, borderRadius: 4, borderSkipped: "start", maxBarThickness: 26, categoryPercentage: .8, barPercentage: .9 }, extra);
+
+  function windowRows() {
+    const end = lastUpdate().getTime();
+    return dailyRows().filter(r => (end - new Date(r.day + "T12:00:00-03:00").getTime()) / DAY <= periodDays);
   }
 
-  function renderFollowers() {
-    const pts = history.filter(r => inPeriod(r.t));
-    const s1 = css("--s1");
-    chart("cFollowers", pts.length < 2 ? null : {
-      type: "line",
+  function renderInterest() {
+    const rows = windowRows().filter(r => r.profile_views != null || r.website_clicks != null);
+    const call = document.getElementById("interestCallout");
+    chart("cInterest", rows.length < 2 ? null : {
       data: {
-        labels: pts.map(r => fmtDateTime(r.t)),
-        datasets: [{
-          label: "Seguidores", data: pts.map(r => r.followers), borderColor: s1, borderWidth: 2,
-          pointRadius: pts.length > 40 ? 0 : 3, pointHoverRadius: 5, pointBackgroundColor: s1,
-          pointBorderColor: css("--surface"), pointBorderWidth: 2, tension: 0.25, fill: true,
-          backgroundColor: ctx => {
-            const { chart } = ctx; const { ctx: c, chartArea } = chart;
-            if (!chartArea) return "transparent";
-            const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            g.addColorStop(0, s1 + "33"); g.addColorStop(1, s1 + "00"); return g;
-          },
-        }],
+        labels: rows.map(r => dayLbl(r.day)),
+        datasets: [
+          barDs("Visitas ao perfil", rows.map(r => r.profile_views ?? null), css("--s1")),
+          { type: "line", label: "Cliques no link", data: rows.map(r => r.website_clicks ?? null), borderColor: css("--s2"), backgroundColor: css("--s2"), borderWidth: 2, pointRadius: rows.length > 40 ? 0 : 3, pointHoverRadius: 5, pointBorderColor: css("--surface"), pointBorderWidth: 2, tension: .3 },
+        ],
       },
-      options: baseOptions({
-        scales: {
-          ...baseOptions().scales,
-          x: { ...baseOptions().scales.x, ticks: { ...baseOptions().scales.x.ticks, maxTicksLimit: 7, callback(v) { return this.getLabelForValue(v).split(" ")[0].slice(0, 5); } } },
-          y: { ...baseOptions().scales.y, grace: "5%" },
+      options: baseOpts(),
+    }, S.flags?.account_insights ? "O token não tem permissão para métricas da conta." : "As métricas diárias aparecem depois da primeira coleta.");
+    if (rows.length >= 7) {
+      const best = rows.reduce((a, b) => (b.profile_views || 0) > (a.profile_views || 0) ? b : a);
+      const byWd = Array(7).fill(0).map(() => []);
+      rows.forEach(r => byWd[new Date(r.day + "T12:00:00-03:00").getDay()].push(r.profile_views || 0));
+      const names = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+      const avg = byWd.map(a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : -1);
+      const top = avg.indexOf(Math.max(...avg));
+      call.hidden = false;
+      call.innerHTML = `Dia com mais procura no período: <b>${dayLbl(best.day)}</b> (${fmt.format(best.profile_views || 0)} visitas). Em média, <b>${names[top]}</b> é o dia em que mais gente visita o perfil.`;
+    } else call.hidden = true;
+  }
+
+  function renderFollows() {
+    const rows = windowRows().filter(r => r.follows != null);
+    const call = document.getElementById("followCallout");
+    if (rows.length >= 2) {
+      chart("cFollows", {
+        data: {
+          labels: rows.map(r => dayLbl(r.day)),
+          datasets: [barDs("Saldo", rows.map(r => (r.follows || 0) - (r.unfollows || 0)), rows.map(r => (r.follows || 0) - (r.unfollows || 0) < 0 ? css("--bad") : css("--s1")))],
         },
-      }),
+        options: baseOpts({ scales: { ...baseOpts().scales, y: { ...baseOpts().scales.y, beginAtZero: true } } }),
+      });
+      const g = rows.reduce((a, r) => a + (r.follows || 0), 0), l = rows.reduce((a, r) => a + (r.unfollows || 0), 0);
+      call.hidden = false; call.innerHTML = `<b>${fmt.format(g)}</b> entraram e <b>${fmt.format(l)}</b> deixaram de seguir no período.`;
+      return;
+    }
+    // sem métrica diária: usa o histórico de coletas
+    const h = (S.history || []).filter(r => lastUpdate() - new Date(r.ts) <= periodDays * DAY);
+    document.getElementById("followHint").textContent = "Total de seguidores a cada coleta";
+    call.hidden = true;
+    chart("cFollows", h.length < 2 ? null : {
+      type: "line",
+      data: { labels: h.map(r => fmtD(new Date(r.ts))), datasets: [{ label: "Seguidores", data: h.map(r => r.followers), borderColor: css("--s1"), borderWidth: 2, pointRadius: 0, tension: .25, fill: false }] },
+      options: baseOpts({ scales: { ...baseOpts().scales, y: { ...baseOpts().scales.y, beginAtZero: false } } }),
     }, "O gráfico aparece a partir da 2ª coleta.");
   }
 
-  function dailyBar(id, field, label, posColor, negColor) {
-    const rows = dailyDeltas(field).filter(r => inPeriod(new Date(r.day + "T12:00:00-03:00")));
-    chart(id, rows.length < 1 ? null : {
-      type: "bar",
-      data: {
-        labels: rows.map(r => dayLabel(r.day)),
-        datasets: [{
-          label, data: rows.map(r => r.value),
-          backgroundColor: rows.map(r => r.value < 0 ? negColor : posColor),
-          borderRadius: 4, borderSkipped: "start", maxBarThickness: 28, categoryPercentage: 0.8, barPercentage: 0.9,
-        }],
-      },
-      options: baseOptions({ interaction: { mode: "index", intersect: false } }),
-    }, "Os dados diários aparecem depois de 2 dias de coleta.");
-    return rows;
+  // ---------------------------------------------------------- posts
+  function sortValue(p, key) {
+    if (key === "procura") return procura(p) ?? -1;
+    if (key === "eng") return engagement(p);
+    return ins(p, key) ?? -1;
   }
-
-  function renderDailyTable(fRows) {
-    const lRows = new Map(dailyDeltas("likes_gained").map(r => [r.day, r.value]));
-    const el = document.getElementById("tDaily");
-    if (!fRows.length) { el.innerHTML = `<p class="sub" style="margin:8px 0 0">Sem dados ainda.</p>`; return; }
-    el.innerHTML = `<table><thead><tr><th>Dia</th><th>Seguidores</th><th>Saldo</th><th>Novas curtidas</th></tr></thead><tbody>${
-      [...fRows].reverse().map(r => `<tr><td>${dayLabel(r.day)}</td><td>${fmt.format(r.total)}</td><td>${r.value > 0 ? "+" : ""}${fmt.format(r.value)}</td><td>${lRows.has(r.day) ? fmt.format(lRows.get(r.day)) : "—"}</td></tr>`).join("")
-    }</tbody></table>`;
-  }
-
-  function renderPosts() {
-    const posts = (postsData?.posts || []).slice(0, 20).reverse();
-    chart("cPosts", !posts.length ? null : {
-      type: "bar",
-      data: {
-        labels: posts.map(p => fmtDate(new Date(p.timestamp))),
-        datasets: [
-          { label: "Curtidas", data: posts.map(p => p.likes), backgroundColor: css("--s1"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 18, categoryPercentage: 0.75, barPercentage: 0.88 },
-          { label: "Comentários", data: posts.map(p => p.comments), backgroundColor: css("--s2"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 18, categoryPercentage: 0.75, barPercentage: 0.88 },
-        ],
-      },
-      options: baseOptions({
-        plugins: {
-          ...baseOptions().plugins,
-          tooltip: {
-            ...baseOptions().plugins.tooltip,
-            callbacks: {
-              ...baseOptions().plugins.tooltip.callbacks,
-              title: items => {
-                const p = posts[items[0].dataIndex];
-                const cap = (p.caption || "").split("\n")[0];
-                return `${TYPE_LABEL[p.type] || p.type} · ${fmtDate(new Date(p.timestamp))}${cap ? "\n" + (cap.length > 48 ? cap.slice(0, 48) + "…" : cap) : ""}`;
-              },
-            },
-          },
-        },
-        onClick: (e, els) => { if (els.length) window.open(posts[els[0].index].permalink, "_blank", "noopener"); },
-      }),
-    }, "Nenhum post encontrado ainda.");
-  }
-
-  function renderFormats() {
-    const groups = {};
-    for (const p of postsData?.posts || []) {
-      const k = TYPE_LABEL[p.type] || p.type;
-      (groups[k] ||= []).push(p.likes + p.comments);
-    }
-    const rows = Object.entries(groups)
-      .map(([k, v]) => ({ k, avg: v.reduce((a, b) => a + b, 0) / v.length, n: v.length }))
-      .sort((a, b) => b.avg - a.avg);
-    chart("cFormats", !rows.length ? null : {
-      type: "bar",
-      data: {
-        labels: rows.map(r => `${r.k} (${r.n})`),
-        datasets: [{ label: "Média por post", data: rows.map(r => Math.round(r.avg)), backgroundColor: css("--s1"), borderRadius: 4, borderSkipped: "start", maxBarThickness: 30 }],
-      },
-      options: baseOptions({
-        indexAxis: "y",
-        interaction: { mode: "nearest", axis: "y", intersect: false },
-        scales: {
-          x: { ...baseOptions().scales.y },
-          y: { ...baseOptions().scales.x, ticks: { ...baseOptions().scales.x.ticks, color: css("--text") } },
-        },
-      }),
-    }, "Nenhum post encontrado ainda.");
-  }
-
-  function renderTop() {
-    const el = document.getElementById("top");
-    const posts = [...(postsData?.posts || [])].sort((a, b) => (b.likes + b.comments) - (a.likes + a.comments)).slice(0, 5);
-    if (!posts.length) { el.innerHTML = `<li style="display:block;color:var(--muted)">Nenhum post ainda.</li>`; return; }
-    const esc = s => (s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-    el.innerHTML = posts.map((p, i) => `
-      <li>
-        <span class="rank">${i + 1}</span>
-        <a href="${esc(p.permalink)}" target="_blank" rel="noopener">${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}</a>
-        <a href="${esc(p.permalink)}" target="_blank" rel="noopener">
-          <div class="cap">${esc((p.caption || "Sem legenda").split("\n")[0])}</div>
-          <div class="meta">${TYPE_LABEL[p.type] || p.type} · ${fmtDate(new Date(p.timestamp))}</div>
+  function postCard(p, i) {
+    const pv = ins(p, "profile_visits"), fo = ins(p, "follows"), re = ins(p, "reach"), sa = ins(p, "saved"), sh = ins(p, "shares");
+    const cells = [];
+    if (pv != null) cells.push(["Visitas perfil", pv, true]);
+    if (fo != null) cells.push(["Seguidores", fo, true]);
+    if (re != null) cells.push(["Alcance", re]);
+    if (sa != null) cells.push(["Salvos", sa]);
+    if (sh != null) cells.push(["Compart.", sh]);
+    cells.push(["Curtidas", p.likes]); cells.push(["Coment.", p.comments]);
+    const theme = themeOf(p);
+    return `
+      <article class="card post">
+        <a class="thumb" href="${esc(p.permalink)}" target="_blank" rel="noopener">
+          ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+          <span class="rank">#${i + 1}</span><span class="type">${TYPE[p.type] || p.type}</span>
         </a>
-        <div class="nums"><b>${fmt.format(p.likes)}</b>${fmt.format(p.comments)} coment.</div>
-      </li>`).join("");
+        <div class="body">
+          <div class="cap">${esc(firstLine(p.caption) || "Sem legenda")}</div>
+          <div class="meta"><span>${fmtD(postDate(p))}</span>${theme ? `<span class="tag">${theme}</span>` : ""}</div>
+          <div class="stats">${cells.slice(0, 6).map(([l, v, hl]) => `<div class="${hl ? "hl" : ""}"><b class="num">${compact.format(v)}</b><span>${l}</span></div>`).join("")}</div>
+          <div class="actions">
+            <a class="btn" href="${esc(p.permalink)}" target="_blank" rel="noopener">Abrir</a>
+            <button class="btn" data-copy="${esc(p.permalink)}">Copiar link</button>
+          </div>
+        </div>
+      </article>`;
+  }
+  function renderPosts() {
+    let list = postsInPeriod();
+    let note = "";
+    if (list.length < 4) { list = posts().slice(0, 12); note = " · poucos posts no período, mostrando os 12 mais recentes"; }
+    const hasProc = list.some(p => procura(p) != null);
+    let key = sortKey;
+    if (key === "procura" && !hasProc) key = "eng";
+    if (["reach", "saved", "shares"].includes(key) && !hasIns(key)) key = "eng";
+    list = [...list].sort((a, b) => sortValue(b, key) - sortValue(a, key)).slice(0, 12);
+    document.getElementById("procuraHint").textContent = (hasProc
+      ? "Ordenados pelo que mais levou pessoas ao perfil e gerou seguidores, não só por curtidas"
+      : "Ordenados por curtidas e comentários (os insights por post aparecem após a coleta)") + note;
+    document.getElementById("posts").innerHTML = list.length ? list.map(postCard).join("") : `<div class="notice">Nenhum post encontrado ainda.</div>`;
   }
 
-  function renderHeader() {
-    const p = postsData?.profile;
-    const notice = document.getElementById("notice");
-    if (!p) {
-      document.getElementById("updated").textContent = "Ainda não há dados coletados.";
-      notice.innerHTML = `<div class="notice"><b>Nenhum dado ainda.</b> Rode o workflow “Coletar dados e publicar dashboard” na aba Actions do repositório. Os dados aparecem aqui depois da primeira coleta.</div>`;
+  // ---------------------------------------------------------- ammo
+  function themeOf(p) { const t = THEMES.find(t => t.rx.test(p.caption || "")); return t ? t.name : null; }
+  function score(p) { return (procura(p) ?? 0) * 3 + (ins(p, "saved") || 0) * 2 + (ins(p, "shares") || 0) * 2 + engagement(p) * 0.2 + (reachOf(p) || 0) * 0.01; }
+  function renderAmmo() {
+    const out = [];
+    for (const t of THEMES) {
+      const list = posts().filter(p => themeOf(p) === t.name).sort((a, b) => score(b) - score(a));
+      if (!list.length) continue;
+      const p = list[0];
+      const why = [];
+      if (ins(p, "profile_visits")) why.push(`${fmt.format(ins(p, "profile_visits"))} visitas ao perfil`);
+      if (ins(p, "saved")) why.push(`${fmt.format(ins(p, "saved"))} salvamentos`);
+      if (!why.length) why.push(`${fmt.format(engagement(p))} curtidas e comentários`);
+      out.push(`
+        <div class="card">
+          ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}
+          <div class="info">
+            <span class="tag" style="align-self:flex-start">${t.name}</span>
+            <p>${esc(firstLine(p.caption) || "Sem legenda")}</p>
+            <div class="why">Melhor de ${list.length} post${list.length > 1 ? "s" : ""} do tema · ${why.join(" · ")}</div>
+            <div class="actions">
+              <button class="btn solid" data-copy="${esc(MSG_TEMPLATE(t.name, p.permalink))}">Copiar mensagem</button>
+              <button class="btn" data-copy="${esc(p.permalink)}">Link</button>
+            </div>
+          </div>
+        </div>`);
+    }
+    document.getElementById("ammo").innerHTML = out.length ? out.join("")
+      : `<div class="notice">Nenhum post se encaixou nos temas ainda. As palavras-chave dos temas ficam no início do código do <b>index.html</b> (lista THEMES) e podem ser ajustadas.</div>`;
+  }
+
+  // ---------------------------------------------------------- people
+  function commentsInPeriod() {
+    const end = lastUpdate().getTime();
+    return (S.comments || []).filter(c => c.ts && end - new Date(c.ts).getTime() <= periodDays * DAY);
+  }
+  const AV_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#6250d6", "#e34948", "#008300", "#c98500", "#d55181"];
+  const avColor = u => AV_COLORS[[...u].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % AV_COLORS.length];
+  const ago = d => {
+    const days = Math.floor((lastUpdate() - d) / DAY);
+    return days <= 0 ? "hoje" : days === 1 ? "ontem" : `há ${days} dias`;
+  };
+  const postById = id => posts().find(p => p.id === id);
+
+  function renderPeople() {
+    const wrap = document.getElementById("peopleWrap");
+    const st = S.flags?.comments;
+    if (st !== "ok") {
+      const msg = st === "no_password"
+        ? `<b>Seção desativada.</b> Para listar quem comenta, o painel precisa de senha (são dados de pessoas). Cadastre o secret <b>DASHBOARD_PASSWORD</b> no GitHub e rode a coleta de novo.`
+        : st === "denied"
+        ? `<b>O token atual não tem permissão para ler comentários.</b> O resto do painel funciona normalmente. Para liberar esta seção, gere um novo token do usuário do sistema incluindo a permissão <b>instagram_manage_comments</b>.`
+        : `Os comentários aparecem aqui depois da próxima coleta.`;
+      wrap.innerHTML = `<div class="notice">${msg}</div>`;
       return;
     }
-    document.getElementById("title").textContent = "@" + p.username;
-    document.title = `@${p.username} · Dashboard`;
-    const av = document.getElementById("avatar");
-    if (p.picture) { av.src = p.picture; av.hidden = false; av.referrerPolicy = "no-referrer"; av.onerror = () => { av.hidden = true; }; }
-    document.getElementById("updated").textContent =
-      `${p.name ? p.name + " · " : ""}Atualizado em ${fmtDateTime(new Date(postsData.updated_at))} (Brasília)`;
-    const days = history.length ? (history[history.length - 1].t - history[0].t) / DAY : 0;
-    notice.innerHTML = history.length < 2 || days < 1
-      ? `<div class="notice"><b>Coletando histórico.</b> A API do Instagram só informa o total atual, então os ganhos de seguidores e curtidas são calculados entre uma coleta e outra. Os gráficos diários ficam completos depois de alguns dias.</div>`
-      : "";
+    const all = S.comments || [];
+    const inP = commentsInPeriod();
+    const leads = inP.filter(c => c.intent && c.intent.length).sort((a, b) => b.ts < a.ts ? -1 : 1);
+
+    // ranking de fãs (todo o histórico)
+    const fans = new Map();
+    for (const c of all) {
+      const f = fans.get(c.user) || { user: c.user, n: 0, posts: new Set(), first: c.ts, last: c.ts, periodN: 0 };
+      f.n++; f.posts.add(c.media_id);
+      if (c.ts < f.first) f.first = c.ts;
+      if (c.ts > f.last) f.last = c.ts;
+      fans.set(c.user, f);
+    }
+    for (const c of inP) { const f = fans.get(c.user); if (f) f.periodN++; }
+    const fanList = [...fans.values()].sort((a, b) => b.posts.size - a.posts.size || b.n - a.n);
+    const active = fanList.filter(f => f.periodN > 0);
+    const newcomers = fanList.filter(f => lastUpdate() - new Date(f.first) <= 14 * DAY).length;
+
+    const person = (user, html, right = "") => `
+      <div class="person">
+        <div class="av" style="background:${avColor(user)}">${esc(user[0] || "?")}</div>
+        <div>${html}</div>
+        <div>${right}</div>
+      </div>`;
+    const profileLink = u => `<a class="name" href="https://instagram.com/${encodeURIComponent(u)}" target="_blank" rel="noopener">@${esc(u)}</a>`;
+
+    // um lead por pessoa: comentário mais recente + quantas vezes demonstrou interesse
+    const byUser = new Map();
+    for (const c of leads) {
+      const g = byUser.get(c.user) || { last: c, n: 0, intents: new Set() };
+      g.n++; c.intent.forEach(i => g.intents.add(i));
+      byUser.set(c.user, g);
+    }
+    const leadPeople = [...byUser.values()];
+    const leadsHtml = leadPeople.length ? leadPeople.slice(0, 15).map(({ last: c, n, intents }) => {
+      const p = postById(c.media_id), f = fans.get(c.user);
+      return person(c.user, `
+        ${profileLink(c.user)}
+        <div class="txt">“${esc(clip(c.text, 220))}”</div>
+        <div class="sm">${[...intents].map(i => `<span class="chip-i">${esc(i)}</span>`).join("")}<span>${ago(new Date(c.ts))}</span>${n > 1 ? `<span>· ${n} perguntas no período</span>` : ""}${f && f.posts.size > 1 ? `<span>· comentou em ${f.posts.size} posts</span>` : ""}</div>`,
+        p && p.thumb ? `<a href="${esc(p.permalink)}" target="_blank" rel="noopener" title="Ver post"><img class="mini" src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></a>` : "");
+    }).join("") : `<div class="notice" style="border:0;padding:4px 0">Nenhum comentário com intenção de compra nos últimos ${periodDays} dias.</div>`;
+
+    const fansHtml = fanList.length ? fanList.slice(0, 12).map(f => {
+      const badges = [];
+      if (lastUpdate() - new Date(f.first) <= 14 * DAY) badges.push(`<span class="chip-n">novo</span>`);
+      if (f.posts.size >= 5) badges.push(`<span class="chip-g">fã fiel</span>`);
+      if (lastUpdate() - new Date(f.last) > 60 * DAY && f.posts.size >= 3) badges.push(`<span class="chip-i">sumiu</span>`);
+      return person(f.user, `
+        ${profileLink(f.user)}
+        <div class="sm">${badges.join("")}<span>último comentário ${ago(new Date(f.last))}</span><span>· acompanha desde ${fmtD(new Date(f.first))}</span></div>`,
+        `<div class="fan-count"><b class="num">${f.posts.size}</b><span>post${f.posts.size > 1 ? "s" : ""}</span></div>`);
+    }).join("") : `<div class="notice" style="border:0;padding:4px 0">Ainda não há comentários registrados.</div>`;
+
+    wrap.innerHTML = `
+      <div class="grid">
+        <div class="card c7">
+          <h3>Comentários com cara de lead</h3>
+          <p class="hint">Perguntas sobre valor, inscrição, bolsa ou pedidos de informação · ${leadPeople.length} pessoa${leadPeople.length === 1 ? "" : "s"}, ${leads.length} comentário${leads.length === 1 ? "" : "s"} no período</p>
+          <div class="people">${leadsHtml}</div>
+        </div>
+        <div class="card c5">
+          <h3>Quem mais acompanha a EdexLab</h3>
+          <p class="hint">${fmt.format(fans.size)} pessoas já comentaram · ${active.length} ativas no período · ${newcomers} novas em 14 dias</p>
+          <div class="people">${fansHtml}</div>
+        </div>
+      </div>`;
   }
 
-  function render() {
-    renderHeader();
-    renderKPIs();
-    renderFollowers();
-    const fRows = dailyBar("cNewFollowers", "followers", "Saldo de seguidores", css("--s1"), css("--neg"));
-    renderDailyTable(fRows);
-    dailyBar("cNewLikes", "likes_gained", "Novas curtidas", css("--s1"), css("--neg"));
-    renderPosts();
-    renderFormats();
-    renderTop();
+  // ---------------------------------------------------------- when
+  function renderWhen() {
+    const metric = hasIns("reach") ? "reach" : "eng";
+    const val = p => metric === "reach" ? reachOf(p) : engagement(p);
+    const list = posts().filter(p => val(p) != null);
+    const wdNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const bands = [["Madrugada", 0, 6], ["Manhã", 6, 12], ["Tarde", 12, 18], ["Noite", 18, 24]];
+    const wd = Array(7).fill(0).map(() => []), hb = bands.map(() => []);
+    for (const p of list) {
+      const { wd: d, h } = localParts(postDate(p));
+      wd[d].push(val(p));
+      hb[bands.findIndex(([, a, b]) => h >= a && h < b)].push(val(p));
+    }
+    const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+    const label = metric === "reach" ? "Alcance médio" : "Interações médias";
+    const mk = (labels, groups) => ({
+      data: { labels, datasets: [barDs(label, groups.map(g => Math.round(avg(g))), css("--s1"))] },
+      options: baseOpts({
+        plugins: { ...baseOpts().plugins, tooltip: { ...baseOpts().plugins.tooltip, callbacks: { label: c => ` ${label}: ${fmt.format(c.parsed.y)} · ${groups[c.dataIndex].length} posts` } } },
+      }),
+    });
+    chart("cWeekday", list.length < 3 ? null : mk(wdNames, wd), "Precisa de pelo menos 3 posts.");
+    chart("cHour", list.length < 3 ? null : mk(bands.map(b => `${b[0]} (${b[1]}h–${b[2]}h)`), hb), "Precisa de pelo menos 3 posts.");
+    const call = document.getElementById("whenCallout");
+    const valid = (groups, names) => groups.map((g, i) => ({ n: g.length, a: avg(g), name: names[i] })).filter(x => x.n >= 2).sort((a, b) => b.a - a.a);
+    const bw = valid(wd, ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]), bh = valid(hb, bands.map(b => b[0].toLowerCase()));
+    if (list.length >= 8 && bw.length && bh.length) {
+      call.innerHTML = `Melhor combinação até agora: <b>${bw[0].name}</b>, no período da <b>${bh[0].name}</b>. ${metric === "reach" ? "Posts publicados aí alcançam em média" : "Posts publicados aí têm em média"} <b>${fmt.format(Math.round(bw[0].a))}</b> ${metric === "reach" ? "pessoas" : "interações"}. Considera só dias e horários com 2 posts ou mais.`;
+    } else call.innerHTML = `Com mais posts acompanhados, aparece aqui a recomendação de dia e horário.`;
   }
 
-  load();
-  setInterval(load, 15 * 60 * 1000); // recarrega a cada 15 min se a aba ficar aberta
+  // ---------------------------------------------------------- works
+  function renderWorks() {
+    const groups = {};
+    for (const p of posts()) (groups[p.type] ||= []).push(p);
+    const cols = [
+      ["Alcance", p => reachOf(p)],
+      ["Visitas perfil", p => ins(p, "profile_visits")],
+      ["Salvos", p => ins(p, "saved")],
+      ["Compart.", p => ins(p, "shares")],
+      ["Curtidas + com.", p => engagement(p)],
+    ].filter(([, f]) => posts().some(p => f(p) != null));
+    const rows = Object.entries(groups).map(([t, list]) => ({
+      t, n: list.length,
+      v: cols.map(([, f]) => { const xs = list.map(f).filter(x => x != null); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null; }),
+    })).sort((a, b) => b.n - a.n);
+    const best = cols.map((_, i) => Math.max(...rows.map(r => r.v[i] ?? -1)));
+    document.getElementById("formatTable").innerHTML = rows.length ? `
+      <thead><tr><th>Formato</th><th>Posts</th>${cols.map(c => `<th>${c[0]}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(r => `<tr><td><b>${TYPE[r.t] || r.t}</b></td><td>${r.n}</td>${r.v.map((v, i) => `<td class="${v != null && v === best[i] && rows.length > 1 ? "best" : ""}">${v == null ? "—" : fmt.format(Math.round(v))}</td>`).join("")}</tr>`).join("")}</tbody>` : `<tbody><tr><td>Sem posts ainda.</td></tr></tbody>`;
+
+    // comparações de legenda
+    const metric = hasIns("reach") ? "reach" : "eng";
+    const val = p => metric === "reach" ? reachOf(p) : engagement(p);
+    const list = posts().filter(p => val(p) != null);
+    const tests = [
+      ["Legenda com pergunta", p => /\?/.test(p.caption || "")],
+      ["Chamada para ação (comente, salve, link na bio…)", p => /coment|salv[ae]|compartilh|link na bio|clique|inscreva|garanta|acesse|marque/i.test(p.caption || "")],
+      ["Legenda curta (até 300 caracteres)", p => (p.caption || "").length <= 300],
+      ["Com emojis", p => /\p{Extended_Pictographic}/u.test(p.caption || "")],
+      ["Menciona o MBA", p => /\bmba\b/i.test(p.caption || "")],
+    ];
+    const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const unit = metric === "reach" ? "pessoas alcançadas" : "interações";
+    const html = tests.map(([q, f]) => {
+      const yes = list.filter(f).map(val), no = list.filter(p => !f(p)).map(val);
+      if (yes.length < 2 || no.length < 2) return "";
+      const a = avg(yes), b = avg(no), ch = pctChange(a, b);
+      return `<div class="cmp"><div class="q">${q}</div>${deltaPill(a, b)}<div class="a">Com: <b>${fmt.format(Math.round(a))}</b> ${unit} em média (${yes.length} posts) · Sem: <b>${fmt.format(Math.round(b))}</b> (${no.length} posts)</div></div>`;
+    }).join("");
+    document.getElementById("compare").innerHTML = html || `<div class="notice" style="border:0;padding:0">Precisa de mais posts para comparar.</div>`;
+  }
+
+  // ---------------------------------------------------------- audience
+  function bars(rows, total, max = 8, labelFn = x => x) {
+    if (!rows || !rows.length) return `<div class="notice" style="border:0;padding:0">Sem dados de público ainda (a Meta só libera para contas com 100+ seguidores).</div>`;
+    const top = rows.slice(0, max), m = Math.max(...top.map(r => r[1]));
+    return top.map(([k, v]) => `
+      <div class="bar-row"><span class="lbl" title="${esc(k)}">${esc(labelFn(k))}</span>
+      <span class="track"><span class="fill" style="display:block;width:${(v / m) * 100}%"></span></span>
+      <span class="v">${total ? fmt1.format((v / total) * 100) + "%" : fmt.format(v)}</span></div>`).join("");
+  }
+  function renderAudience() {
+    const d = S.demographics || {};
+    const sum = rows => (rows || []).reduce((a, r) => a + r[1], 0);
+    document.getElementById("cities").innerHTML = bars(d.city, sum(d.city), 8, k => k.split(",")[0]);
+    const ageOrder = ["13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+    const ages = (d.age || []).slice().sort((a, b) => ageOrder.indexOf(a[0]) - ageOrder.indexOf(b[0]));
+    document.getElementById("ages").innerHTML = bars(ages, sum(ages), 8, k => `${k} anos`);
+    let g = "";
+    if (d.gender && d.gender.length) {
+      const map = Object.fromEntries(d.gender), tot = sum(d.gender);
+      const F = map.F || 0, M = map.M || 0;
+      g += `<div style="font-size:13px;color:var(--text-2)">Mulheres <b style="color:var(--text)">${fmt1.format(F / tot * 100)}%</b> · Homens <b style="color:var(--text)">${fmt1.format(M / tot * 100)}%</b></div>
+            <div class="split"><div style="width:${F / tot * 100}%"></div><div style="width:${M / tot * 100}%"></div></div>`;
+    }
+    const rs = d.reach_split;
+    if (rs) {
+      const fol = rs.follower || 0, non = rs.non_follower || 0, t = fol + non;
+      if (t) g += `<div style="font-size:13px;color:var(--text-2);margin-top:10px">Do alcance, <b style="color:var(--text)">${fmt1.format(non / t * 100)}%</b> foi de <b style="color:var(--text)">quem ainda não segue</b> a conta.</div>
+            <div class="split"><div style="width:${fol / t * 100}%"></div><div style="width:${non / t * 100}%"></div></div>
+            <div class="legend" style="margin:0"><span><i style="background:var(--s1)"></i>Seguidores</span><span><i style="background:var(--s2)"></i>Não seguidores</span></div>`;
+    }
+    document.getElementById("gender").innerHTML = g || `<div class="notice" style="border:0;padding:0">Sem dados ainda.</div>`;
+  }
+
+  boot();
 })();
 </script>
 </body>
