@@ -1,0 +1,65 @@
+name: Coletar dados e publicar dashboard
+
+on:
+  schedule:
+    # A cada 6 horas (horário UTC). Minuto 17 para evitar o pico das :00.
+    - cron: "17 */6 * * *"
+  workflow_dispatch: # botão "Run workflow" para rodar na hora
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: coleta-instagram
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Coletar dados do Instagram
+        if: github.event_name != 'push'
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python3 scripts/collect.py
+
+      - name: Salvar dados no repositório
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "dashboard-bot"
+          git config user.email "dashboard-bot@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Sem mudanças nos dados."
+          else
+            git commit -m "dados: coleta $(date -u +'%Y-%m-%d %H:%M') UTC"
+            git push
+          fi
+
+      - name: Preparar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar o site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  publicar:
+    needs: coletar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
