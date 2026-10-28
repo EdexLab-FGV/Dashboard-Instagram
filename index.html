@@ -369,7 +369,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 
 #report { display: none; }
 @media print {
-  @page { size: A4; margin: 11mm 11mm 12mm; }
+  @page { size: A4; margin: 0; }
   html, body { background: #fff !important; }
   body > *:not(#report) { display: none !important; }
   #report { display: block !important; }
@@ -381,9 +381,12 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 #report * { box-sizing: border-box; }
+#report .page { width: 210mm; min-height: 296mm; padding: 13mm 13mm 12mm; display: flex; flex-direction: column; break-after: page; page-break-after: always; }
+#report .page:last-child { break-after: auto; page-break-after: auto; }
+#report .page > .foot { margin-top: auto; }
 #report b { font-weight: 700; }
 #report a { color: inherit; text-decoration: none; }
-#report .pg2 { break-before: page; }
+
 #report .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 #report .top img { height: 34px; width: auto; display: block; }
 #report .top .meta { text-align: right; }
@@ -1373,20 +1376,22 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
     const ctot = (S.demographics?.city || []).reduce((a, r) => a + r[1], 0);
     const leads = S.flags?.comments === "ok" ? (S.comments || []).filter(c => c.ts && end - new Date(c.ts).getTime() <= n * DAY && c.intent && c.intent.length) : [];
     const p = S.profile || {};
-    const html = `
+    const html = `<div class="page">
       <div class="top"><img src="${LOGO}" alt="EdexLab · FGV Educação Executiva"><div class="meta"><div class="eyebrow">Relatório do Instagram</div><div class="per">Últimos ${n} dias · @${esc(p.username || "")}</div><div class="gen">${fmt.format(p.followers || 0)} seguidores · gerado em ${nowBR()}</div></div></div>
       <div class="hero"><h1>Resultado do Instagram</h1><p class="lead">${sum[0] || ""}</p>
         <div class="big3">${k.slice(0, 3).map(x => `<div><div class="l">${esc(x.l)}</div><div class="v">${esc(x.v)}</div>${/[▲▼]/.test(x.d) ? `<span class="rp ${x.cls}">${esc(x.d)} vs período anterior</span>` : ""}</div>`).join("")}</div></div>
       <div class="small4">${k.slice(3).concat([{ l: "Publicações no período", v: fmt.format(list.length), d: "" }]).slice(0, 4).map(x => `<div><div class="l">${esc(x.l)}</div><div class="v">${esc(x.v)}</div><div class="x">${/[▲▼]/.test(x.d) ? esc(x.d) + " vs período anterior" : ""}</div></div>`).join("")}</div>
       <h2>Destaques</h2><div class="ins">${sum.slice(1, 5).map((s, i) => `<div><span class="n">${i + 1}</span><p>${s}</p></div>`).join("")}</div>
       ${rows.length > 1 ? `<h2>Visitas ao perfil por dia</h2><div class="box">${barsSvg(rows.map(r => r.profile_views || 0), "#003e7e", rows.map(r => dayLbl(r.day)))}</div>` : ""}
+      <div class="foot"><span>Painel do Instagram EdexLab · dados da Instagram Graph API</span><span>1/2</span></div></div>
+      <div class="page"><div class="top"><img src="${LOGO}" alt="EdexLab · FGV Educação Executiva"><div class="meta"><div class="eyebrow">Relatório do Instagram · continuação</div><div class="per">Últimos ${n} dias · @${esc(p.username || "")}</div><div class="gen">Gerado em ${nowBR()}</div></div></div>
       ${top.length ? `<h2>${hasProc ? "Posts que mais levaram pessoas ao perfil" : "Posts com mais interações"}</h2><div class="ads4">${top.map((x, i) => `<div class="ad">${x.thumb ? `<img src="${esc(x.thumb)}" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}<span class="rk">#${i + 1}</span><div class="b"><div class="t">${esc(firstLine(x.caption) || "Sem legenda")}</div><div class="n" style="font-size:9px;color:#4b5570;margin-top:4px">${ins(x, "profile_visits") != null ? `${fmt.format(ins(x, "profile_visits"))} visitas ao perfil · ` : ""}${fmt.format(engagement(x))} curtidas e coment.</div></div></div>`).join("")}</div>` : ""}
       <div class="two">
         <div><h2>Quando postar</h2><div class="box note" style="margin:0">${when}</div></div>
         <div><h2>Principais cidades</h2>${cities.length ? `<table><tbody>${cities.map(c => `<tr><td>${esc(c[0].split(",")[0])}</td><td>${ctot ? fmt1.format(c[1] / ctot * 100) + "%" : fmt.format(c[1])}</td></tr>`).join("")}</tbody></table>` : `<div class="box note" style="margin:0">Sem dados de público.</div>`}</div>
       </div>
       ${leads.length ? `<h2>Comentários com cara de lead (${leads.length})</h2><ul class="r-list">${leads.slice(0, 8).map(c => `<li><b>@${esc(c.user)}</b>: “${esc(clip(c.text, 140))}”</li>`).join("")}</ul>` : ""}
-      <div class="foot"><span>Painel do Instagram EdexLab · dados da Instagram Graph API</span><span>${location.host}</span></div>`;
+      <div class="foot"><span>Painel do Instagram EdexLab · dados da Instagram Graph API</span><span>2/2</span></div></div>`;
     const text = [
       `📱 *Instagram @${p.username || ""} · últimos ${n} dias*`, "",
       k.map(x => `• ${x.l}: ${x.v}${/[▲▼]/.test(x.d) ? ` (${x.d})` : ""}`).join("\n"),
