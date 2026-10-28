@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "anuncios.html"
 
 permissions:
   contents: write
@@ -22,6 +23,8 @@ concurrency:
 jobs:
   coletar:
     runs-on: ubuntu-latest
+    env:
+      AD_ACCOUNT_ID: ${{ secrets.AD_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v5
 
@@ -36,6 +39,16 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
         run: python3 scripts/collect.py
+
+      - name: Coletar dados de anúncios
+        # só roda se o secret AD_ACCOUNT_ID existir; se falhar, o painel do Instagram é publicado mesmo assim
+        if: github.event_name != 'push' && env.AD_ACCOUNT_ID != ''
+        continue-on-error: true
+        env:
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+        run: python3 scripts/collect_ads.py
 
       - name: Salvar dados no repositório
         if: github.event_name != 'push'
