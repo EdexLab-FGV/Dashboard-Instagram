@@ -296,6 +296,17 @@ def _creative_text(cr):
     return title, body
 
 
+def _creative_kind(cr):
+    oss = cr.get("object_story_spec") or {}
+    ld = oss.get("link_data") or {}
+    afs = cr.get("asset_feed_spec") or {}
+    if ld.get("child_attachments") or (afs.get("ad_formats") or [None])[0] == "CAROUSEL":
+        return "carousel"
+    if cr.get("video_id") or cr.get("object_type") == "VIDEO" or oss.get("video_data") or afs.get("videos"):
+        return "video"
+    return "image"
+
+
 def update_ad_details(state, today):
     meta = state.setdefault("ads", {})
     daily = state.get("daily", {})
@@ -345,7 +356,7 @@ def update_ad_details(state, today):
                 "title": (title or "")[:200] or None,
                 "body": (body or "")[:1500] or None,
                 "cta": cr.get("call_to_action_type"),
-                "kind": "video" if cr.get("video_id") or (cr.get("object_type") == "VIDEO") else "image",
+                "kind": _creative_kind(cr),
                 "permalink": cr.get("instagram_permalink_url"),
                 "image_src": cr.get("image_url") or cr.get("thumbnail_url"),
             })
