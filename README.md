@@ -61,10 +61,19 @@ Sem `DASHBOARD_PASSWORD`, o painel funciona sem senha, mas a seção **Pessoas**
 
 **Trocar a senha depois apaga o histórico** (os dados antigos foram criptografados com a senha antiga). Escolha uma senha definitiva.
 
+## Relatórios
+
+Os dois painéis têm o botão **Relatório** no topo: escolha 7 ou 30 dias e
+
+- **Baixar PDF**: abre a janela de impressão; escolha "Salvar como PDF".
+- **Copiar resumo em texto**: pronto para colar no WhatsApp ou no e-mail.
+
 ## Ajustes
 
 - **Temas da seção "Para o comercial":** lista `THEMES` no início do `<script>` do `index.html`. Cada post entra no primeiro tema que bater.
 - **Mensagem pronta do WhatsApp:** `MSG_TEMPLATE`, logo abaixo dos temas.
+- **Metas do mês (anúncios):** `METAS` no início do `<script>` do `anuncios.html`. Ex.: `{ contatos: 600, investimento: 20000, custo_por_contato: 35 }`.
+- **Assuntos dos anúncios:** lista `AD_THEMES`, logo abaixo das metas.
 - **Palavras que indicam lead nos comentários:** `INTENT_RULES` em `scripts/collect.py`.
 - **Frequência da coleta:** linha `cron` em `.github/workflows/collect.yml` (horário UTC).
 
