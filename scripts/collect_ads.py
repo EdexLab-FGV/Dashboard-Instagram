@@ -36,6 +36,8 @@ DATA = ROOT / "data"
 THUMBS = DATA / "ads" / "thumbs"
 STATE_PLAIN = DATA / "ads.json"
 STATE_ENC = DATA / "ads.enc.json"
+WEEKLY_PLAIN = DATA / "ads_weekly.json"
+WEEKLY_ENC = DATA / "ads_weekly.enc.json"
 
 TOKEN = (os.environ.get("META_ADS_TOKEN") or os.environ.get("IG_ACCESS_TOKEN") or "").strip()
 ACCOUNT = os.environ.get("AD_ACCOUNT_ID", "").strip().replace("act_", "")
@@ -45,6 +47,8 @@ BASE = f"https://graph.facebook.com/{VERSION}"
 ACT = f"act_{ACCOUNT}"
 
 BACKFILL_DAYS = 180      # histórico buscado na primeira coleta
+HIST_START = date.fromisoformat(os.environ.get("HIST_START", "2024-01-01"))  # início do histórico semanal (aba Cursos)
+WEEKLY_REFRESH_WEEKS = 3
 REFRESH_DAYS = 7         # últimos dias sempre atualizados (a Meta ajusta a atribuição)
 KEEP_DAYS = 400
 PERIODS = (7, 30, 90)
@@ -151,14 +155,15 @@ def decrypt(env):
     return json.loads(pt.decode("utf-8"))
 
 
-def load_state():
+def load_state(enc_path=None, plain_path=None):
+    STATE_ENC, STATE_PLAIN = enc_path or globals()["STATE_ENC"], plain_path or globals()["STATE_PLAIN"]
     if STATE_ENC.exists():
         if not PASSWORD:
-            fail("existe data/ads.enc.json mas o secret DASHBOARD_PASSWORD não está definido")
+            fail(f"existe {STATE_ENC.name} mas o secret DASHBOARD_PASSWORD não está definido")
         try:
             return decrypt(json.loads(STATE_ENC.read_text(encoding="utf-8")))
         except Exception:
-            fail("não foi possível abrir data/ads.enc.json com a senha atual (a DASHBOARD_PASSWORD mudou?)")
+            fail(f"não foi possível abrir {STATE_ENC.name} com a senha atual (a DASHBOARD_PASSWORD mudou?)")
     if STATE_PLAIN.exists():
         try:
             return json.loads(STATE_PLAIN.read_text(encoding="utf-8"))
@@ -167,7 +172,8 @@ def load_state():
     return {}
 
 
-def save_state(state):
+def save_state(state, enc_path=None, plain_path=None):
+    STATE_ENC, STATE_PLAIN = enc_path or globals()["STATE_ENC"], plain_path or globals()["STATE_PLAIN"]
     DATA.mkdir(exist_ok=True)
     if PASSWORD:
         STATE_ENC.write_text(json.dumps(encrypt(state)), encoding="utf-8")
@@ -455,6 +461,60 @@ def update_breakdowns(state, yday):
     state["breakdowns"] = out
 
 
+def update_weekly(wk, state, today):
+    """Histórico semanal por anúncio desde HIST_START (segunda a domingo), usado na aba Cursos."""
+    weeks = wk.setdefault("weeks", {})
+    ads = wk.setdefault("ads", {})
+    camps = wk.setdefault("campaigns", {})
+    start = HIST_START - timedelta(days=HIST_START.weekday())
+    if weeks:
+        last = date.fromisoformat(max(weeks))
+        refresh = last - timedelta(days=7 * (WEEKLY_REFRESH_WEEKS - 1))
+        start = max(start, refresh - timedelta(days=refresh.weekday()))
+    fields = ("ad_id,ad_name,campaign_id,campaign_name,spend,impressions,reach,clicks,"
+              "inline_link_clicks,actions")
+    chunk_weeks = 13
+    while start <= today:
+        end = min(start + timedelta(days=7 * chunk_weeks - 1), today)
+        try:
+            rows = paged(f"{ACT}/insights", {"level": "ad", "time_increment": 7, "time_range": tr(start, end),
+                                             "fields": fields, "limit": 500})
+        except ApiError as e:
+            if chunk_weeks > 2 and (e.code in (1, 2, 100) or e.status >= 500 or e.status == 0):
+                chunk_weeks = max(2, chunk_weeks // 2)
+                log(f"semanal: reduzindo o bloco para {chunk_weeks} semanas ({e.message[:80]})")
+                continue
+            raise
+        d = start
+        while d <= end:
+            weeks.pop(d.isoformat(), None)
+            d += timedelta(days=7)
+        for r in rows:
+            w, ad = r.get("date_start"), r.get("ad_id")
+            if not w or not ad:
+                continue
+            row = compact(r)
+            reach = int(float(r.get("reach", 0) or 0))
+            clicks = int(float(r.get("clicks", 0) or 0))
+            if reach:
+                row["r"] = reach
+            if clicks:
+                row["k"] = clicks
+            if row:
+                weeks.setdefault(w, {})[ad] = row
+            a = ads.setdefault(ad, {})
+            a["n"] = r.get("ad_name") or a.get("n")
+            a["c"] = r.get("campaign_id") or a.get("c")
+            if r.get("campaign_id"):
+                camps[r["campaign_id"]] = r.get("campaign_name") or camps.get(r["campaign_id"])
+        log(f"semanal {start} → {end}: {len(rows)} linhas")
+        start = end + timedelta(days=1)
+    # formato do criativo (vem do painel de anúncios, quando conhecido)
+    for ad, m in state.get("ads", {}).items():
+        if ad in ads and m.get("kind"):
+            ads[ad]["k"] = m["kind"]
+
+
 # ---------------------------------------------------------------------- main
 
 def main():
@@ -483,6 +543,15 @@ def main():
     update_thumbs(state)
     update_periods(state, yday)
     update_breakdowns(state, yday)
+
+    wk = load_state(WEEKLY_ENC, WEEKLY_PLAIN)
+    try:
+        update_weekly(wk, state, today)
+        wk.update({"version": 1, "updated_at": now.isoformat(), "today": today.isoformat(),
+                   "account": {"name": acc.get("name"), "currency": acc.get("currency") or "BRL"}})
+        save_state(wk, WEEKLY_ENC, WEEKLY_PLAIN)
+    except ApiError as e:
+        log(f"histórico semanal não atualizado nesta coleta: {e}")
 
     state.update({
         "version": 1,
