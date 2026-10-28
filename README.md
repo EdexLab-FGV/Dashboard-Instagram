@@ -4,6 +4,7 @@ Dois painéis que se atualizam sozinhos, pensados para o time comercial:
 
 - **`index.html`**: conta do Instagram
 - **`anuncios.html`**: campanhas de anúncios (Meta Ads)
+- **`cursos.html`**: campanhas por curso, cidade e tipo de criativo, com histórico semanal desde jan/2024
 
 Os dois usam a mesma senha e têm um botão no topo para alternar entre eles.
 
@@ -43,6 +44,15 @@ O que a Meta **não** libera por meios oficiais: a lista de quem curtiu e a list
 **Contato** = formulário preenchido + conversa iniciada (WhatsApp/Direct) por um anúncio.
 
 As miniaturas dos criativos ficam em `data/ads/thumbs/` **sem criptografia** (os links da Meta expiram, por isso são baixadas). São as mesmas artes que já aparecem publicamente na Biblioteca de Anúncios da Meta. Números de investimento e resultado ficam criptografados.
+
+## Aba Cursos
+
+Mesmo conteúdo da planilha semanal de campanhas, atualizado sozinho:
+
+- Curso, cidade (Ribeirão Preto / Rio Preto) e tipo de criativo são identificados **pelo nome da campanha e do anúncio**. As regras ficam no início do `<script>` do `cursos.html` (`CURSO_RULES`, `CIDADE_RULES`, `TIPO_RULES`). Ao criar um curso novo, siga o padrão de nome atual (ex.: `GEST. FINANCEIRA RIB_PRETO - ...`) ou acrescente uma regra.
+- Campanhas de alcance/engajamento ficam fora dos rankings de custo por lead (`CURSOS_SEM_LEAD`).
+- **Baixar planilha** exporta um CSV no mesmo formato da planilha de campanhas (separador `;`, vírgula decimal).
+- O histórico semanal fica em `data/ads_weekly.enc.json`. A primeira coleta busca tudo desde `HIST_START` (padrão 2024-01-01) e pode levar alguns minutos.
 
 ## Secrets necessários
 
