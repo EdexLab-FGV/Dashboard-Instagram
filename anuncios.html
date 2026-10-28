@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de Anúncios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ------------------------------------------------------------------ tokens */
+:root {
+  color-scheme: light;
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --border: #e6e8ee;
+  --text: #0f1729;
+  --text-2: #4a5468;
+  --muted: #8a93a6;
+  --grid: #eef0f4;
+  --brand: #0f2b5b;          /* azul institucional */
+  --brand-2: #1d4a94;
+  --on-brand: #ffffff;
+  --on-brand-2: rgba(255,255,255,.72);
+  --s1: #2a78d6;             /* série 1 */
+  --s2: #eb6834;             /* série 2 */
+  --s1-soft: rgba(42,120,214,.12);
+  --good: #0f7b3e; --good-bg: #e5f5ec;
+  --bad: #c43434;  --bad-bg: #fbeaea;
+  --warn: #9a6200; --warn-bg: #fff3d6;
+  --chip: #eef2fb; --chip-text: #1d4a94;
+  --shadow: 0 1px 2px rgba(15,23,41,.04), 0 4px 16px rgba(15,23,41,.05);
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0c111b; --surface: #141a26; --surface-2: #19202e; --border: #252d3d;
+    --text: #eef1f7; --text-2: #b4bccb; --muted: #7d879a; --grid: #212938;
+    --brand: #0f2b5b; --brand-2: #1d4a94;
+    --s1: #3987e5; --s2: #d95926; --s1-soft: rgba(57,135,229,.16);
+    --good: #4cc27c; --good-bg: rgba(76,194,124,.12);
+    --bad: #ef7070; --bad-bg: rgba(239,112,112,.12);
+    --warn: #f0b443; --warn-bg: rgba(240,180,67,.12);
+    --chip: #1d2638; --chip-text: #9cc0f5;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0c111b; --surface: #141a26; --surface-2: #19202e; --border: #252d3d;
+  --text: #eef1f7; --text-2: #b4bccb; --muted: #7d879a; --grid: #212938;
+  --brand: #0f2b5b; --brand-2: #1d4a94;
+  --s1: #3987e5; --s2: #d95926; --s1-soft: rgba(57,135,229,.16);
+  --good: #4cc27c; --good-bg: rgba(76,194,124,.12);
+  --bad: #ef7070; --bad-bg: rgba(239,112,112,.12);
+  --warn: #f0b443; --warn-bg: rgba(240,180,67,.12);
+  --chip: #1d2638; --chip-text: #9cc0f5;
+  --shadow: none;
+}
+
+/* ------------------------------------------------------------------- base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+button { font: inherit; }
+.num { font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+/* --------------------------------------------------------------- lock */
+#lock {
+  min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+  background: radial-gradient(1200px 600px at 20% -10%, var(--brand-2), transparent 60%), var(--brand);
+}
+.lock-card {
+  width: 100%; max-width: 380px; background: var(--surface); border-radius: 22px; padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+.lock-card .icon {
+  width: 46px; height: 46px; border-radius: 14px; background: var(--chip); color: var(--chip-text);
+  display: grid; place-items: center; font-size: 22px; margin-bottom: 14px;
+}
+.lock-card h1 { margin: 0 0 4px; font-size: 20px; }
+.lock-card p { margin: 0 0 18px; color: var(--text-2); font-size: 13.5px; }
+.lock-card input[type=password] {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text); font: inherit; font-size: 15px; outline: none;
+}
+.lock-card input[type=password]:focus { border-color: var(--s1); box-shadow: 0 0 0 3px var(--s1-soft); }
+.lock-card label.remember { display: flex; gap: 8px; align-items: center; margin: 12px 0 16px; color: var(--text-2); font-size: 13px; }
+.btn-primary {
+  width: 100%; border: 0; border-radius: 12px; padding: 12px; background: var(--brand-2); color: #fff;
+  font-weight: 700; cursor: pointer; font-size: 14.5px;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.lock-err { color: var(--bad); font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+/* --------------------------------------------------------------- hero */
+.hero {
+  background: radial-gradient(900px 420px at 85% -20%, var(--brand-2), transparent 70%), var(--brand);
+  color: var(--on-brand); padding: 26px 0 64px;
+}
+.hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.hero .avatar {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none;
+  border: 3px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12);
+}
+.hero h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.hero .sub { color: var(--on-brand-2); font-size: 13px; margin-top: 2px; }
+.hero .who { flex: 1; min-width: 200px; }
+.hero-stats { display: flex; gap: 22px; margin-top: 18px; flex-wrap: wrap; }
+.hero-stats div b { display: block; font-size: 20px; font-weight: 800; }
+.hero-stats div span { color: var(--on-brand-2); font-size: 12.5px; }
+.controls { display: flex; gap: 8px; align-items: center; }
+.seg { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; }
+.seg button {
+  border: 0; background: transparent; color: var(--on-brand-2); font-size: 13px; font-weight: 600;
+  padding: 7px 12px; border-radius: 9px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: #fff; color: var(--brand); }
+.icon-btn {
+  border: 0; background: rgba(255,255,255,.1); color: #fff; width: 36px; height: 36px;
+  border-radius: 11px; cursor: pointer; font-size: 15px;
+}
+
+/* --------------------------------------------------------------- nav */
+.nav {
+  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+}
+.nav .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
+.nav a {
+  white-space: nowrap; text-decoration: none; color: var(--text-2); font-weight: 600; font-size: 13px;
+  padding: 7px 12px; border-radius: 10px;
+}
+.nav a:hover { background: var(--surface); color: var(--text); }
+
+main { margin-top: -44px; position: relative; z-index: 1; padding-bottom: 48px; }
+section { margin-top: 28px; }
+section:first-child { margin-top: 0; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 0 2px 12px; flex-wrap: wrap; }
+.sec-head h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+.sec-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px; min-width: 0;
+}
+.card h3 { margin: 0; font-size: 14.5px; font-weight: 700; }
+.card .hint { margin: 2px 0 14px; color: var(--muted); font-size: 12.5px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
+.c12 { grid-column: span 12; } .c8 { grid-column: span 8; } .c7 { grid-column: span 7; }
+.c6 { grid-column: span 6; } .c5 { grid-column: span 5; } .c4 { grid-column: span 4; } .c3 { grid-column: span 3; }
+@media (max-width: 920px) { .c8, .c7, .c6, .c5, .c4, .c3 { grid-column: span 12; } }
+
+/* --------------------------------------------------------------- summary */
+.summary { display: flex; gap: 16px; align-items: flex-start; }
+.summary .badge {
+  flex: none; width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center;
+  background: var(--chip); color: var(--chip-text); font-size: 20px;
+}
+.summary h3 { font-size: 15px; }
+.summary ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.summary li { color: var(--text-2); font-size: 14px; }
+.summary li b { color: var(--text); }
+
+/* --------------------------------------------------------------- KPIs */
+.kpis { display: grid; gap: 14px; grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 1050px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+.kpi { padding: 16px 16px 12px; display: flex; flex-direction: column; }
+.kpi .label { color: var(--text-2); font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.kpi .value { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+.kpi .foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.pill { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.up { color: var(--good); background: var(--good-bg); }
+.pill.down { color: var(--bad); background: var(--bad-bg); }
+.pill.flat { color: var(--muted); background: var(--surface-2); }
+.spark { width: 72px; height: 26px; flex: none; }
+.kpi .explain { color: var(--muted); font-size: 11.5px; margin-top: 6px; }
+
+/* --------------------------------------------------------------- charts */
+.chart-box { position: relative; height: 270px; }
+.chart-box.sm { height: 220px; }
+.legend { display: flex; gap: 14px; margin: -6px 0 10px; color: var(--text-2); font-size: 12.5px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.legend i.line { height: 3px; border-radius: 2px; width: 14px; }
+.callout {
+  margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2);
+  color: var(--text-2); font-size: 13px;
+}
+.callout b { color: var(--text); }
+.empty { display: grid; place-items: center; height: 100%; color: var(--muted); font-size: 13px; text-align: center; padding: 0 16px; }
+
+/* --------------------------------------------------------------- posts */
+.tabs { display: inline-flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 3px; flex-wrap: wrap; }
+.tabs button {
+  border: 0; background: transparent; color: var(--text-2); font-size: 12.5px; font-weight: 600;
+  padding: 6px 11px; border-radius: 9px; cursor: pointer;
+}
+.tabs button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.posts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.post { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.post .thumb { position: relative; aspect-ratio: 4 / 5; background: var(--surface-2); overflow: hidden; }
+.post .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post .rank {
+  position: absolute; top: 10px; left: 10px; background: rgba(10,15,25,.72); color: #fff;
+  font-weight: 800; font-size: 12px; border-radius: 8px; padding: 3px 8px; backdrop-filter: blur(4px);
+}
+.post .type {
+  position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,.92); color: #111;
+  font-weight: 700; font-size: 11px; border-radius: 8px; padding: 3px 8px;
+}
+.post .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.post .cap { font-size: 13px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 39px; }
+.post .meta { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.stats div { background: var(--surface-2); border-radius: 10px; padding: 6px 8px; }
+.stats b { display: block; font-size: 14px; font-weight: 800; }
+.stats span { font-size: 10.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+.stats .hl { background: var(--s1-soft); }
+.stats .hl b { color: var(--s1); }
+.post .actions { display: flex; gap: 8px; margin-top: auto; }
+.btn {
+  flex: 1; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 10px;
+  padding: 7px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; text-decoration: none; text-align: center; white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.solid { background: var(--brand-2); color: #fff; border-color: transparent; }
+.btn.solid:hover { filter: brightness(1.08); }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--chip-text); }
+
+/* --------------------------------------------------------------- ammo */
+.ammo { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.ammo .card { display: flex; gap: 14px; align-items: stretch; padding: 14px; }
+.ammo img, .ammo .ph { width: 92px; height: 115px; border-radius: 12px; object-fit: cover; background: var(--surface-2); flex: none; }
+.ammo .info { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+.ammo .info p { margin: 0; font-size: 12.5px; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ammo .why { font-size: 12px; color: var(--muted); }
+.ammo .actions { display: flex; gap: 6px; margin-top: auto; }
+.ammo .actions .btn:not(.solid) { flex: 0 0 auto; }
+
+/* --------------------------------------------------------------- table */
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: right; color: var(--muted); font-weight: 600; font-size: 12px; padding: 8px 8px; border-bottom: 1px solid var(--border); }
+table.t td { text-align: right; padding: 10px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+table.t th:first-child, table.t td:first-child { text-align: left; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t td.best { font-weight: 800; color: var(--s1); }
+.compare { display: grid; gap: 10px; }
+.cmp { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px; border-radius: 12px; background: var(--surface-2); }
+.cmp .q { font-weight: 700; font-size: 13px; }
+.cmp .a { font-size: 12.5px; color: var(--text-2); grid-column: 1 / -1; }
+.cmp .pill { align-self: start; }
+
+/* --------------------------------------------------------------- people */
+.people { display: grid; gap: 0; }
+.person { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; padding: 12px 0; border-top: 1px solid var(--grid); align-items: start; }
+.person:first-child { border-top: 0; padding-top: 4px; }
+.av {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 800;
+  font-size: 15px; color: #fff; text-transform: uppercase;
+}
+.person .name { font-weight: 700; font-size: 13.5px; text-decoration: none; }
+.person .name:hover { text-decoration: underline; }
+.person .txt { font-size: 13px; color: var(--text-2); margin-top: 2px; word-break: break-word; }
+.person .sm { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.person img.mini { width: 42px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--surface-2); }
+.chip-i { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); }
+.chip-n { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--good-bg); color: var(--good); }
+.chip-g { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.fan-count { text-align: right; }
+.fan-count b { display: block; font-size: 18px; font-weight: 800; }
+.fan-count span { font-size: 11.5px; color: var(--muted); }
+.notice {
+  border: 1px dashed var(--border); border-radius: var(--radius); padding: 16px; color: var(--text-2);
+  font-size: 13.5px; background: var(--surface);
+}
+.notice b { color: var(--text); }
+.more { margin-top: 10px; }
+
+.bars { display: grid; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(90px, 38%) 1fr 54px; gap: 10px; align-items: center; font-size: 13px; }
+.bar-row .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.bar-row .track { height: 10px; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.bar-row .fill { height: 100%; background: var(--s1); border-radius: 6px; }
+.bar-row .v { text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.split { display: flex; height: 14px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 8px 0 10px; }
+.split div:first-child { background: var(--s1); }
+.split div:last-child { background: var(--s2); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); opacity: 0;
+  background: var(--text); color: var(--surface); padding: 10px 16px; border-radius: 12px; font-weight: 600;
+  font-size: 13px; transition: .2s; pointer-events: none; z-index: 50;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 36px; }
+[hidden] { display: none !important; }
+
+/* ----------------------------------------------------------- anúncios */
+.switch { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; margin-bottom: 18px; }
+.switch a { color: var(--on-brand-2); text-decoration: none; font-weight: 700; font-size: 12.5px; padding: 6px 12px; border-radius: 9px; }
+.switch a[aria-current="page"] { background: #fff; color: var(--brand); }
+.today-chip {
+  display: inline-flex; gap: 8px; align-items: center; margin-top: 14px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(255,255,255,.1); color: var(--on-brand-2); font-size: 12.5px;
+}
+.today-chip b { color: #fff; }
+.today-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #4cc27c; box-shadow: 0 0 0 3px rgba(76,194,124,.25); }
+
+.pill.neutral { color: var(--chip-text); background: var(--chip); }
+
+/* alertas */
+.alerts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.alert { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; }
+.alert .ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; font-weight: 800; }
+.alert.bad .ic { background: var(--bad-bg); color: var(--bad); }
+.alert.warn .ic { background: var(--warn-bg); color: var(--warn); }
+.alert.good .ic { background: var(--good-bg); color: var(--good); }
+.alert h4 { margin: 0; font-size: 13.5px; }
+.alert p { margin: 3px 0 0; font-size: 12.5px; color: var(--text-2); }
+.alert .act { margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--text); }
+
+/* semáforo */
+.light { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.light::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.light.green { color: var(--good); background: var(--good-bg); }
+.light.yellow { color: var(--warn); background: var(--warn-bg); }
+.light.red { color: var(--bad); background: var(--bad-bg); }
+.light.gray { color: var(--muted); background: var(--surface-2); }
+
+/* campanhas */
+.camps { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+.camp { display: flex; flex-direction: column; gap: 12px; }
+.camp-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.camp h3 { font-size: 14.5px; line-height: 1.35; }
+.camp .obj { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.status { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.status.on { color: var(--good); background: var(--good-bg); }
+.status.off { color: var(--muted); background: var(--surface-2); }
+.status.issue { color: var(--bad); background: var(--bad-bg); }
+.share { display: grid; gap: 4px; }
+.share .track { height: 8px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.share .fill { height: 100%; border-radius: 6px; background: var(--s1); }
+.share small { font-size: 11.5px; color: var(--muted); }
+.stats4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.stats4 div { background: var(--surface-2); border-radius: 10px; padding: 7px 9px; min-width: 0; }
+.stats4 b { display: block; font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stats4 span { font-size: 10.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+.camp .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.linkbtn { border: 0; background: none; color: var(--s1); font-weight: 700; font-size: 12.5px; cursor: pointer; padding: 0; }
+
+/* criativos */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filters select {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 10px;
+  padding: 7px 10px; font: inherit; font-size: 12.5px; font-weight: 600; max-width: 260px;
+}
+.ads { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.ad { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.ad .thumb { position: relative; aspect-ratio: 1 / 1; background: var(--surface-2); overflow: hidden; }
+.ad .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ad .thumb .noimg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 12px; }
+.ad .badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.ad .badges span { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px; backdrop-filter: blur(4px); }
+.b-rank { background: rgba(10,15,25,.72); color: #fff; }
+.b-best { background: #0f7b3e; color: #fff; }
+.b-tired { background: #b45309; color: #fff; }
+.b-new { background: #1d4a94; color: #fff; }
+.b-off { background: rgba(255,255,255,.92); color: #333; }
+.b-video { margin-left: auto; background: rgba(255,255,255,.92); color: #111; }
+.ad .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.ad .ttl { font-weight: 700; font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ad .camp-name { font-size: 11.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad .cost-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ad .cost-line b { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+.ad .cost-line small { font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+.mini3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mini3 div { background: var(--surface-2); border-radius: 10px; padding: 6px 8px; min-width: 0; }
+.mini3 b { display: block; font-size: 13.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini3 span { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.ad .btn { flex: none; }
+.ad .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+.ad details { font-size: 12.5px; color: var(--text-2); }
+.ad details summary { cursor: pointer; font-weight: 600; color: var(--text); font-size: 12.5px; }
+.ad details p { margin: 6px 0; white-space: pre-line; max-height: 160px; overflow: auto; }
+
+/* o que o lead viu */
+.seen { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.seen .card { display: flex; gap: 14px; padding: 14px; }
+.seen img, .seen .ph { width: 96px; height: 96px; border-radius: 12px; object-fit: cover; background: var(--surface-2); flex: none; }
+.seen .info { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1; }
+.seen .info b { font-size: 13.5px; }
+.seen .info p { margin: 0; font-size: 12.5px; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.seen .info .why { font-size: 12px; color: var(--muted); }
+.seen .actions { display: flex; gap: 6px; margin-top: auto; }
+
+/* funil */
+.funnel { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: stretch; }
+@media (max-width: 760px) { .funnel { grid-template-columns: 1fr; } .funnel .arrow { transform: rotate(90deg); justify-self: center; } }
+.step { background: var(--surface-2); border-radius: 14px; padding: 16px; }
+.step .lbl { font-size: 12.5px; color: var(--text-2); font-weight: 600; }
+.step .big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; }
+.step .cost { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.arrow { display: grid; place-items: center; text-align: center; color: var(--text-2); font-size: 12px; font-weight: 700; min-width: 92px; }
+.arrow b { display: block; font-size: 18px; color: var(--s1); }
+
+.bar-row.wide { grid-template-columns: minmax(90px, 32%) 1fr minmax(110px, auto); }
+.bar-row .v small { color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div id="lock" hidden>
+  <form class="lock-card" id="lockForm">
+    <div class="icon">🔒</div>
+    <h1>Painel de Anúncios</h1>
+    <p>Este painel mostra investimento e resultados da EdexLab e é protegido. Digite a senha para continuar.</p>
+    <input type="password" id="pass" placeholder="Senha" autocomplete="current-password" required>
+    <label class="remember"><input type="checkbox" id="remember"> Lembrar neste aparelho</label>
+    <button class="btn-primary" type="submit" id="unlockBtn">Entrar</button>
+    <div class="lock-err" id="lockErr"></div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="switch" aria-label="Painéis"><a href="index.html">Instagram</a><a href="anuncios.html" aria-current="page">Anúncios</a></nav>
+      <div class="hero-top">
+        <div class="who">
+          <h1 id="title">Painel de Anúncios</h1>
+          <div class="sub" id="updated"></div>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Período">
+            <button data-days="7">7 dias</button>
+            <button data-days="30" aria-pressed="true">30 dias</button>
+            <button data-days="90">90 dias</button>
+          </div>
+          <button class="icon-btn" id="themeBtn" title="Alternar tema" aria-label="Alternar tema"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+        </div>
+      </div>
+      <div class="today-chip" id="todayChip" hidden></div>
+    </div>
+  </header>
+
+  <nav class="nav"><div class="wrap">
+    <a href="#resumo">Resumo</a>
+    <a href="#atencao">Atenção</a>
+    <a href="#contatos">Contatos</a>
+    <a href="#horarios">Quando chegam</a>
+    <a href="#campanhas">Campanhas</a>
+    <a href="#criativos">Criativos</a>
+    <a href="#lead-viu">O que o lead viu</a>
+    <a href="#funil">Funil</a>
+    <a href="#publico">Quem vira contato</a>
+  </div></nav>
+
+  <main class="wrap">
+    <section id="resumo">
+      <div class="card summary">
+        <div class="badge">✦</div>
+        <div><h3 id="sumTitle">Resumo</h3><ul id="sumList"></ul></div>
+      </div>
+      <div class="kpis" id="kpis" style="margin-top:14px"></div>
+    </section>
+
+    <section id="atencao">
+      <div class="sec-head"><div><h2>Atenção e oportunidades</h2><p>O que merece ação agora, com base nos últimos 7 dias</p></div></div>
+      <div class="alerts" id="alerts"></div>
+    </section>
+
+    <section id="contatos">
+      <div class="sec-head"><div><h2>Contatos gerados</h2><p>Contato = pessoa que preencheu um formulário ou começou uma conversa (WhatsApp/Direct) por um anúncio</p></div></div>
+      <div class="grid">
+        <div class="card c8">
+          <h3>Contatos por dia</h3>
+          <p class="hint">Passe o mouse para ver quanto foi investido no dia</p>
+          <div class="legend"><span><i style="background:var(--s1)"></i>Formulários</span><span><i style="background:var(--s2)"></i>Conversas</span></div>
+          <div class="chart-box"><canvas id="cContacts"></canvas></div>
+          <div class="callout" id="contactsCallout" hidden></div>
+        </div>
+        <div class="card c4">
+          <h3>Custo por contato, por dia</h3>
+          <p class="hint">Quanto mais baixo, melhor. A linha tracejada é a média do período</p>
+          <div class="chart-box sm"><canvas id="cCost"></canvas></div>
+          <div class="callout" id="costCallout" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="horarios">
+      <div class="sec-head"><div><h2>Quando os contatos chegam</h2><p>Para o comercial saber quando ter alguém pronto para responder</p></div></div>
+      <div class="grid">
+        <div class="card c8"><h3>Por horário do dia</h3><p class="hint">Total de contatos em cada hora, no período</p><div class="chart-box sm"><canvas id="cHour"></canvas></div></div>
+        <div class="card c4"><h3>Por dia da semana</h3><p class="hint">Média de contatos por dia</p><div class="chart-box sm"><canvas id="cWeekday"></canvas></div></div>
+        <div class="c12"><div class="callout" id="whenCallout" style="margin:0"></div></div>
+      </div>
+    </section>
+
+    <section id="campanhas">
+      <div class="sec-head"><div><h2>Campanhas</h2><p>O semáforo compara o custo por contato de cada campanha com a média da conta no período</p></div></div>
+      <div class="camps" id="camps"></div>
+    </section>
+
+    <section id="criativos">
+      <div class="sec-head">
+        <div><h2>Criativos</h2><p id="adsHint">Cada arte com o que ela trouxe de resultado</p></div>
+        <div class="filters">
+          <select id="campFilter" aria-label="Filtrar por campanha"></select>
+          <div class="tabs" id="adSort">
+            <button data-sort="cost" aria-pressed="true">Melhor custo</button>
+            <button data-sort="contacts">Mais contatos</button>
+            <button data-sort="spend">Mais investimento</button>
+            <button data-sort="ctr">Mais cliques</button>
+          </div>
+        </div>
+      </div>
+      <div class="ads" id="ads"></div>
+    </section>
+
+    <section id="lead-viu">
+      <div class="sec-head"><div><h2>O que o lead viu antes de chegar</h2><p>Os anúncios que mais trouxeram contatos. Use a mesma promessa na abordagem</p></div></div>
+      <div class="seen" id="seen"></div>
+    </section>
+
+    <section id="funil">
+      <div class="sec-head"><div><h2>Do anúncio ao contato</h2><p>Quantas pessoas passam por cada etapa e quanto custa cada uma</p></div></div>
+      <div class="card"><div class="funnel" id="funnel"></div></div>
+    </section>
+
+    <section id="publico">
+      <div class="sec-head"><div><h2>Quem vira contato</h2><p>De onde vêm os contatos e onde o anúncio rende mais</p></div></div>
+      <div class="grid">
+        <div class="card c6"><h3>Estados</h3><p class="hint">Contatos por estado e custo de cada um</p><div class="bars" id="regions"></div></div>
+        <div class="card c6"><h3>Onde o anúncio apareceu</h3><p class="hint">Em destaque o posicionamento com o menor custo por contato</p><div style="overflow-x:auto"><table class="t" id="placements"></table></div></div>
+        <div class="card c6"><h3>Faixa etária</h3><p class="hint">Contatos por idade</p><div class="bars" id="ages"></div></div>
+        <div class="card c6"><h3>Gênero</h3><p class="hint">Contatos e custo por contato</p><div id="genders"></div></div>
+      </div>
+    </section>
+
+    <footer>Dados oficiais da API de Marketing da Meta · atualizado automaticamente a cada 6 horas · os números de ontem e hoje ainda podem mudar um pouco</footer>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const DAY = 864e5;
+  const fmt = new Intl.NumberFormat("pt-BR");
+  const fmt1 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
+  const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+  let money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+  let money0 = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const brl = v => v == null ? "—" : (Math.abs(v) >= 1000 ? money0.format(v) : money.format(v));
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const clip = (s, n) => (s || "").length > n ? s.slice(0, n - 1).trimEnd() + "…" : (s || "");
+  const firstLine = s => (s || "").split("\n").find(l => l.trim()) || "";
+  const pctChange = (a, b) => (b ? (a - b) / b : null);
+  if (window.Chart) Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif";
+
+  const OBJECTIVE = {
+    OUTCOME_LEADS: "Gerar cadastros", LEAD_GENERATION: "Gerar cadastros",
+    OUTCOME_ENGAGEMENT: "Engajamento e conversas", MESSAGES: "Conversas no WhatsApp/Direct", POST_ENGAGEMENT: "Engajamento",
+    OUTCOME_TRAFFIC: "Levar pessoas ao site", LINK_CLICKS: "Levar pessoas ao site",
+    OUTCOME_AWARENESS: "Ser visto (reconhecimento)", REACH: "Ser visto (alcance)", BRAND_AWARENESS: "Ser visto (reconhecimento)",
+    OUTCOME_SALES: "Vendas/conversões", CONVERSIONS: "Vendas/conversões", VIDEO_VIEWS: "Visualizações de vídeo",
+    OUTCOME_APP_PROMOTION: "Promover app",
+  };
+  const AWARENESS = new Set(["OUTCOME_AWARENESS", "REACH", "BRAND_AWARENESS", "VIDEO_VIEWS"]);
+  const STATUS = {
+    ACTIVE: ["Ativa", "on"], PAUSED: ["Pausada", "off"], CAMPAIGN_PAUSED: ["Pausada", "off"], ADSET_PAUSED: ["Pausada", "off"],
+    ARCHIVED: ["Arquivada", "off"], DELETED: ["Excluída", "off"], IN_PROCESS: ["Em análise", "off"], PENDING_REVIEW: ["Em análise", "off"],
+    WITH_ISSUES: ["Com problema", "issue"], DISAPPROVED: ["Reprovada", "issue"], PENDING_BILLING_INFO: ["Pagamento pendente", "issue"],
+  };
+  const PLATFORM = { facebook: "Facebook", instagram: "Instagram", audience_network: "Rede de parceiros", messenger: "Messenger", threads: "Threads" };
+  const POSITION = {
+    feed: "Feed", story: "Stories", instagram_stories: "Stories", instagram_reels: "Reels", facebook_reels: "Reels",
+    facebook_reels_overlay: "Reels (sobreposição)", instagram_explore: "Explorar", instagram_explore_grid_home: "Explorar",
+    instagram_profile_feed: "Perfil", marketplace: "Marketplace", video_feeds: "Vídeos", right_hand_column: "Coluna direita",
+    search: "Busca", instream_video: "Vídeo in-stream", an_classic: "Apps e sites", rewarded_video: "Vídeo premiado",
+    messenger_inbox: "Caixa de entrada", messenger_stories: "Stories", instagram_search: "Busca", threads_feed: "Feed",
+  };
+
+  let S = null, periodDays = 30, gallerySort = "cost", galleryCamp = "all", charts = {};
+
+  // ------------------------------------------------------------ tema
+  try { const t = localStorage.getItem("ig-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("ig-theme", next); } catch (e) {}
+    if (S) render();
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => S && render());
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    periodDays = +b.dataset.days; render();
+  }));
+  document.querySelectorAll("#adSort button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#adSort button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    gallerySort = b.dataset.sort; renderAds();
+  }));
+  document.getElementById("campFilter").addEventListener("change", e => { galleryCamp = e.target.value; renderAds(); });
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) { const ta = Object.assign(document.createElement("textarea"), { value: text }); document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+    toast("Copiado!");
+  }
+  document.addEventListener("click", e => {
+    const c = e.target.closest("[data-copy]");
+    if (c) { e.preventDefault(); copy(c.dataset.copy); return; }
+    const f = e.target.closest("[data-filter-camp]");
+    if (f) {
+      galleryCamp = f.dataset.filterCamp;
+      document.getElementById("campFilter").value = galleryCamp;
+      renderAds(); document.getElementById("criativos").scrollIntoView({ behavior: "smooth" });
+    }
+  });
+
+  // ---------------------------------------------------------- senha
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  async function decrypt(env, pass) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(env.salt), iterations: env.iter, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(env.iv) }, key, b64(env.data));
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  async function boot() {
+    const bust = "?v=" + Date.now();
+    let enc = null, plain = null;
+    try { const r = await fetch("data/ads.enc.json" + bust); if (r.ok) enc = await r.json(); } catch (e) {}
+    if (!enc) { try { const r = await fetch("data/ads.json" + bust); if (r.ok) plain = await r.json(); } catch (e) {} }
+    if (!enc) return start(plain);
+    let saved = null;
+    try { saved = localStorage.getItem("ig-pass") || sessionStorage.getItem("ig-pass"); } catch (e) {}
+    if (saved) { try { return start(await decrypt(enc, saved)); } catch (e) {} }
+    const lock = document.getElementById("lock"); lock.hidden = false;
+    document.getElementById("pass").focus();
+    document.getElementById("lockForm").addEventListener("submit", async ev => {
+      ev.preventDefault();
+      const pass = document.getElementById("pass").value, btn = document.getElementById("unlockBtn"), err = document.getElementById("lockErr");
+      btn.textContent = "Abrindo…"; err.textContent = "";
+      try {
+        const data = await decrypt(enc, pass);
+        try { if (document.getElementById("remember").checked) localStorage.setItem("ig-pass", pass); else sessionStorage.setItem("ig-pass", pass); } catch (e) {}
+        lock.hidden = true; start(data);
+      } catch (e) { err.textContent = "Senha incorreta."; btn.textContent = "Entrar"; }
+    });
+  }
+  function start(data) {
+    S = data;
+    document.getElementById("app").hidden = false;
+    if (!S || !S.daily) {
+      document.getElementById("updated").textContent = "Ainda sem dados de anúncios.";
+      document.querySelector("main").innerHTML = `<section><div class="notice"><b>O painel de anúncios ainda não tem dados.</b> Cadastre o secret <b>AD_ACCOUNT_ID</b> no GitHub, confira se o token tem a permissão <b>ads_read</b> e rode a coleta na aba Actions.</div></section>`;
+      return;
+    }
+    const cur = S.account?.currency || "BRL";
+    money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: cur });
+    money0 = new Intl.NumberFormat("pt-BR", { style: "currency", currency: cur, maximumFractionDigits: 0 });
+    render();
+  }
+
+  // ---------------------------------------------------------- dados
+  const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const dayLbl = k => `${k.slice(8, 10)}/${k.slice(5, 7)}`;
+  const weekdayOf = k => new Date(k + "T12:00:00Z").getUTCDay();
+  function range(n, back = 0) {           // n dias terminando ontem (back = quantos períodos para trás)
+    const end = addDays(S.yesterday, -back * n), out = [];
+    for (let i = n - 1; i >= 0; i--) out.push(addDays(end, -i));
+    return out;
+  }
+  const blank = () => ({ s: 0, i: 0, c: 0, l: 0, m: 0, v: 0 });
+  function add(t, r) { t.s += r.s || 0; t.i += r.i || 0; t.c += r.c || 0; t.l += r.l || 0; t.m += r.m || 0; t.v += r.v || 0; return t; }
+  function total(dates, pred = () => true) {
+    const t = blank();
+    for (const d of dates) for (const [ad, r] of Object.entries(S.daily[d] || {})) if (pred(ad)) add(t, r);
+    return t;
+  }
+  function byAd(dates) {
+    const m = new Map();
+    for (const d of dates) for (const [ad, r] of Object.entries(S.daily[d] || {})) add(m.get(ad) || (m.set(ad, blank()), m.get(ad)), r);
+    return m;
+  }
+  function byCampaign(dates) {
+    const m = new Map();
+    for (const [ad, t] of byAd(dates)) {
+      const c = S.ads[ad]?.campaign_id || "?";
+      add(m.get(c) || (m.set(c, blank()), m.get(c)), t);
+    }
+    return m;
+  }
+  const contacts = t => (t.l || 0) + (t.m || 0);
+  const cpc = t => contacts(t) ? t.s / contacts(t) : null;
+  const ctr = t => t.i ? t.c / t.i : null;
+  const adName = ad => S.ads[ad]?.title || S.ads[ad]?.name || "Anúncio sem nome";
+  const campName = id => S.campaigns[id]?.name || "Campanha";
+  const period = () => S.periods?.[String(periodDays)] || {};
+
+  function light(t, avg, objective) {
+    if (AWARENESS.has(objective) && !contacts(t)) return { cls: "gray", txt: "objetivo: ser visto" };
+    if (!avg) return { cls: "gray", txt: "sem referência" };
+    if (!contacts(t)) return t.s < avg * 1.2 ? { cls: "gray", txt: "pouco dado ainda" } : { cls: "red", txt: "sem contatos" };
+    if (contacts(t) < 3 && t.s < avg * 3) return { cls: "gray", txt: "pouco dado ainda" };
+    const r = cpc(t) / avg;
+    if (r <= 0.85) return { cls: "green", txt: "mais barato que a média" };
+    if (r <= 1.2) return { cls: "yellow", txt: "na média" };
+    return { cls: "red", txt: "mais caro que a média" };
+  }
+
+  function fatigue(ad) {
+    const a = byAd(range(7)).get(ad), b = byAd(range(7, 1)).get(ad);
+    const freq = S.periods?.["7"]?.ad?.[ad]?.[1] || 0;
+    if (!a || !b || a.i < 1000 || b.i < 1000) return null;
+    const drop = pctChange(ctr(a), ctr(b));
+    if (freq >= 2.5 && drop != null && drop <= -0.25) return { freq, drop };
+    return null;
+  }
+
+  // ---------------------------------------------------------- render
+  function render() {
+    renderHeader(); renderKPIs(); renderSummary(); renderAlerts();
+    renderContacts(); renderWhen(); renderCampaigns(); renderCampFilter(); renderAds();
+    renderSeen(); renderFunnel(); renderAudience();
+  }
+
+  function renderHeader() {
+    document.getElementById("title").textContent = S.account?.name || "Painel de Anúncios";
+    document.title = `${S.account?.name || "Anúncios"} · Painel`;
+    const upd = new Date(S.updated_at);
+    document.getElementById("updated").textContent =
+      `Período: ${dayLbl(range(periodDays)[0])} a ${dayLbl(S.yesterday)} · atualizado em ${upd.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}`;
+    const t = total([S.today]);
+    const chip = document.getElementById("todayChip");
+    chip.hidden = false;
+    chip.innerHTML = `<span class="dot"></span>Hoje até agora: <b>${brl(t.s)}</b> investidos · <b>${fmt.format(contacts(t))}</b> contato${contacts(t) === 1 ? "" : "s"}`;
+  }
+
+  function pill(cur, prev, { lowerIsBetter = false, neutral = false } = {}) {
+    if (cur == null || prev == null || !prev) return `<span class="pill flat">sem comparação</span>`;
+    const ch = pctChange(cur, prev);
+    if (Math.abs(ch) < 0.005) return `<span class="pill flat">estável</span>`;
+    const good = lowerIsBetter ? ch < 0 : ch > 0;
+    const cls = neutral ? "neutral" : good ? "up" : "down";
+    return `<span class="pill ${cls}">${ch > 0 ? "▲" : "▼"} ${fmt1.format(Math.abs(ch * 100))}%</span>`;
+  }
+  function spark(series, color) {
+    const s = series.filter(v => v != null);
+    if (s.length < 2) return "";
+    const w = 72, h = 26, min = Math.min(...s), max = Math.max(...s), r = max - min || 1;
+    const pts = s.map((v, i) => `${(i / (s.length - 1)) * (w - 2) + 1},${h - 2 - ((v - min) / r) * (h - 4)}`).join(" ");
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts}"/></svg>`;
+  }
+
+  function renderKPIs() {
+    const dates = range(periodDays), prevD = range(periodDays, 1);
+    const cur = total(dates), prev = total(prevD);
+    const daily = dates.map(d => total([d]));
+    const p = period().account || {};
+    const s1 = css("--s1");
+    const k = [
+      { label: "Investido", value: brl(cur.s), pill: pill(cur.s, prev.s, { neutral: true }), spark: spark(daily.map(t => t.s), s1), explain: `Total gasto em anúncios nos ${periodDays} dias` },
+      { label: "Contatos", value: fmt.format(contacts(cur)), pill: pill(contacts(cur), contacts(prev)), spark: spark(daily.map(contacts), s1), explain: `${fmt.format(cur.l)} formulários · ${fmt.format(cur.m)} conversas` },
+      { label: "Custo por contato", value: brl(cpc(cur)), pill: pill(cpc(cur), cpc(prev), { lowerIsBetter: true }), spark: spark(daily.map(cpc), s1), explain: "Quanto custou, em média, cada pessoa interessada" },
+      { label: "Pessoas alcançadas", value: p.reach ? fmt.format(p.reach) : "—", pill: p.frequency ? `<span class="pill neutral">${fmt1.format(p.frequency)}× cada</span>` : `<span class="pill flat">—</span>`, spark: "", explain: p.frequency ? `Cada pessoa viu os anúncios ${fmt1.format(p.frequency)} vezes, em média` : "Pessoas diferentes que viram os anúncios" },
+      { label: "Clicaram no anúncio", value: ctr(cur) != null ? `${fmt1.format(ctr(cur) * 100)}%` : "—", pill: pill(ctr(cur), ctr(prev)), spark: spark(daily.map(ctr), s1), explain: ctr(cur) != null ? `De cada 100 vezes que o anúncio apareceu, ${fmt1.format(ctr(cur) * 100)} viraram clique` : "" },
+    ];
+    document.getElementById("kpis").innerHTML = k.map(x => `
+      <div class="card kpi">
+        <div class="label">${x.label}</div>
+        <div class="value num">${x.value}</div>
+        <div class="foot">${x.pill}${x.spark}</div>
+        <div class="explain">${x.explain}</div>
+      </div>`).join("");
+  }
+
+  function hourPeak(rows) {
+    if (!rows || !rows.length) return null;
+    const h = Array(24).fill(0);
+    rows.forEach(r => { h[r[0]] += (r[4] || 0) + (r[5] || 0); });
+    const tot = h.reduce((a, b) => a + b, 0);
+    if (!tot) return null;
+    let best = 0, bestI = 0;
+    for (let i = 0; i < 24; i++) { const s = h[i] + h[(i + 1) % 24] + h[(i + 2) % 24]; if (s > best) { best = s; bestI = i; } }
+    return { from: bestI, to: (bestI + 3) % 24, share: best / tot, hours: h };
+  }
+
+  function renderSummary() {
+    const dates = range(periodDays), prevD = range(periodDays, 1);
+    const cur = total(dates), prev = total(prevD);
+    const out = [];
+    const ch = pctChange(cpc(cur), cpc(prev));
+    out.push(`Foram investidos <b>${brl(cur.s)}</b> e gerados <b>${fmt.format(contacts(cur))} contatos</b> (${fmt.format(cur.l)} formulários e ${fmt.format(cur.m)} conversas)${cpc(cur) != null ? `, custo médio de <b>${brl(cpc(cur))} por contato</b>` : ""}${ch != null && Math.abs(ch) >= 0.01 ? `: <b>${fmt1.format(Math.abs(ch * 100))}% ${ch < 0 ? "mais barato" : "mais caro"}</b> que nos ${periodDays} dias anteriores` : ""}.`);
+    const avg = cpc(cur);
+    const camps = [...byCampaign(dates)].filter(([, t]) => contacts(t) >= 3).sort((a, b) => cpc(a[1]) - cpc(b[1]));
+    if (camps.length > 1) out.push(`A campanha mais eficiente foi <b>“${esc(clip(campName(camps[0][0]), 60))}”</b>, com contatos a <b>${brl(cpc(camps[0][1]))}</b>${avg ? ` (${fmt1.format((1 - cpc(camps[0][1]) / avg) * 100)}% abaixo da média)` : ""}.`);
+    const ads = [...byAd(dates)].sort((a, b) => contacts(b[1]) - contacts(a[1]));
+    if (ads.length && contacts(ads[0][1])) out.push(`O anúncio que mais trouxe contatos foi <b>“${esc(clip(adName(ads[0][0]), 60))}”</b>: <b>${fmt.format(contacts(ads[0][1]))}</b> contatos a ${brl(cpc(ads[0][1]))} cada.`);
+    const pk = hourPeak(S.breakdowns?.[String(periodDays)]?.hour);
+    if (pk) out.push(`<b>${fmt1.format(pk.share * 100)}% dos contatos</b> chegam entre <b>${pk.from}h e ${pk.to}h</b>. É bom ter alguém do comercial respondendo nesse horário.`);
+    const n = buildAlerts().filter(a => a.kind !== "good").length;
+    if (n) out.push(`<b>${n} ponto${n > 1 ? "s" : ""} de atenção</b> nos últimos 7 dias. Veja em <a href="#atencao">Atenção</a>.`);
+    document.getElementById("sumTitle").textContent = `Resumo dos últimos ${periodDays} dias`;
+    document.getElementById("sumList").innerHTML = out.map(x => `<li>${x}</li>`).join("");
+  }
+
+  // ---------------------------------------------------------- alertas
+  function buildAlerts() {
+    const d7 = range(7), p7 = range(7, 1);
+    const cur = total(d7), prev = total(p7), avg = cpc(total(range(30)));
+    const out = [];
+    const chg = pctChange(cpc(cur), cpc(prev));
+    if (chg != null && chg >= 0.25 && contacts(cur) >= 5) out.push({ kind: "bad", ic: "↑", t: `O custo por contato subiu ${fmt1.format(chg * 100)}%`, p: `Nos últimos 7 dias cada contato custou ${brl(cpc(cur))}, contra ${brl(cpc(prev))} na semana anterior.`, a: "Vale revisar os criativos e campanhas marcados abaixo." });
+    if (chg != null && chg <= -0.2 && contacts(cur) >= 5) out.push({ kind: "good", ic: "↓", t: `O custo por contato caiu ${fmt1.format(-chg * 100)}%`, p: `Nos últimos 7 dias cada contato custou ${brl(cpc(cur))}, contra ${brl(cpc(prev))} na semana anterior.`, a: "Boa semana: se o comercial der conta, é hora de investir mais." });
+    for (const [id, t] of byCampaign(d7)) {
+      const obj = S.campaigns[id]?.objective;
+      if (AWARENESS.has(obj) || !avg) continue;
+      if (!contacts(t) && t.s >= avg * 2) out.push({ kind: "bad", ic: "!", t: "Campanha gastando sem trazer contatos", p: `“${esc(clip(campName(id), 70))}” investiu ${brl(t.s)} nos últimos 7 dias sem gerar nenhum contato.`, a: "Sugestão: pausar ou trocar os criativos." });
+    }
+    const ads7 = byAd(d7);
+    const flagged = new Set();
+    for (const [ad, t] of ads7) {
+      const f = fatigue(ad);
+      if (f) flagged.add(ad);
+      if (f) out.push({ kind: "warn", ic: "~", t: "Criativo cansando o público", p: `“${esc(clip(adName(ad), 60))}”: cada pessoa já viu ${fmt1.format(f.freq)} vezes e os cliques caíram ${fmt1.format(-f.drop * 100)}% em relação à semana anterior.`, a: "Sugestão: trocar a arte ou ampliar o público." });
+    }
+    if (avg) {
+      const campSpend = byCampaign(d7);
+      for (const [ad, t] of ads7) {
+        const c = cpc(t); if (c == null || contacts(t) < 3 || flagged.has(ad)) continue;
+        const cs = campSpend.get(S.ads[ad]?.campaign_id)?.s || t.s;
+        if (c <= avg * 0.7 && t.s / cs <= 0.25) out.push({ kind: "good", ic: "★", t: "Criativo barato com pouca verba", p: `“${esc(clip(adName(ad), 60))}” traz contatos a ${brl(c)} (média: ${brl(avg)}), mas recebeu só ${fmt1.format(t.s / cs * 100)}% da verba da campanha.`, a: "Oportunidade: dar mais verba para ele." });
+        else if (c >= avg * 1.6 && t.s >= avg * 3) out.push({ kind: "warn", ic: "$", t: "Criativo caro", p: `“${esc(clip(adName(ad), 60))}” está custando ${brl(c)} por contato, ${fmt1.format((c / avg - 1) * 100)}% acima da média.`, a: "Sugestão: pausar e mover a verba para os mais baratos." });
+      }
+    }
+    const order = { bad: 0, warn: 1, good: 2 };
+    return out.sort((a, b) => order[a.kind] - order[b.kind]).slice(0, 9);
+  }
+  function renderAlerts() {
+    const list = buildAlerts();
+    document.getElementById("alerts").innerHTML = list.length ? list.map(a => `
+      <div class="card alert ${a.kind}"><div class="ic">${a.ic}</div>
+        <div><h4>${a.t}</h4><p>${a.p}</p><div class="act">${a.a}</div></div></div>`).join("")
+      : `<div class="notice">Nada fora do normal nos últimos 7 dias.</div>`;
+  }
+
+  // ---------------------------------------------------------- gráficos
+  function baseOpts(extra = {}) {
+    const t2 = css("--text-2"), grid = css("--grid");
+    return Object.assign({
+      responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: css("--surface"), titleColor: css("--text"), bodyColor: t2, footerColor: t2, borderColor: css("--border"), borderWidth: 1, padding: 10, cornerRadius: 10, boxPadding: 4 },
+      },
+      scales: {
+        x: { grid: { display: false }, border: { color: grid }, ticks: { color: t2, maxRotation: 0, autoSkipPadding: 12, font: { size: 11 } } },
+        y: { grid: { color: grid }, border: { display: false }, beginAtZero: true, ticks: { color: t2, font: { size: 11 }, maxTicksLimit: 6 } },
+      },
+    }, extra);
+  }
+  function chart(id, cfg, emptyMsg) {
+    const cv = document.getElementById(id), box = cv.parentElement;
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+    box.querySelector(".empty")?.remove();
+    if (!cfg) { cv.style.display = "none"; box.insertAdjacentHTML("beforeend", `<div class="empty">${emptyMsg}</div>`); return; }
+    cv.style.display = ""; charts[id] = new Chart(cv, cfg);
+  }
+
+  function renderContacts() {
+    const dates = range(periodDays), rows = dates.map(d => ({ d, ...total([d]) }));
+    const s1 = css("--s1"), s2 = css("--s2"), surf = css("--surface");
+    const ds = (label, key, color) => ({ type: "bar", label, data: rows.map(r => r[key]), backgroundColor: color, borderColor: surf, borderWidth: { top: 2 }, borderRadius: 3, borderSkipped: "start", maxBarThickness: 26, categoryPercentage: .8, barPercentage: .9, stack: "c" });
+    const opts = baseOpts();
+    opts.scales.x.stacked = true; opts.scales.y.stacked = true; opts.scales.y.ticks.precision = 0;
+    opts.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${fmt.format(c.parsed.y)}`, footer: items => { const r = rows[items[0].dataIndex]; return `Investido: ${brl(r.s)}${contacts(r) ? ` · ${brl(cpc(r))} por contato` : ""}`; } };
+    const any = rows.some(r => contacts(r));
+    chart("cContacts", !any ? null : { data: { labels: rows.map(r => dayLbl(r.d)), datasets: [ds("Formulários", "l", s1), ds("Conversas", "m", s2)] }, options: opts }, "Nenhum contato no período.");
+    const call = document.getElementById("contactsCallout");
+    if (any) {
+      const tot = rows.reduce((a, r) => a + contacts(r), 0), best = rows.reduce((a, b) => contacts(b) > contacts(a) ? b : a);
+      call.hidden = false;
+      call.innerHTML = `Média de <b>${fmt1.format(tot / rows.length)} contatos por dia</b>. O melhor dia foi <b>${dayLbl(best.d)}</b>, com ${fmt.format(contacts(best))}.`;
+    } else call.hidden = true;
+
+    const avg = cpc(total(dates));
+    const costOpts = baseOpts();
+    costOpts.scales.y.ticks.callback = v => brl(v);
+    costOpts.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.parsed.y == null ? "sem contatos" : brl(c.parsed.y)}` };
+    chart("cCost", avg == null ? null : {
+      type: "line",
+      data: { labels: rows.map(r => dayLbl(r.d)), datasets: [
+        { label: "Custo por contato", data: rows.map(r => cpc(r)), borderColor: s1, backgroundColor: s1, borderWidth: 2, pointRadius: rows.length > 40 ? 0 : 2.5, pointHoverRadius: 5, tension: .25, spanGaps: true },
+        { label: "Média", data: rows.map(() => avg), borderColor: css("--muted"), borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0 },
+      ] },
+      options: costOpts,
+    }, "Sem contatos no período.");
+    const cc = document.getElementById("costCallout");
+    const withC = rows.filter(r => contacts(r) >= 2);
+    if (withC.length >= 3) {
+      const cheap = withC.reduce((a, b) => cpc(b) < cpc(a) ? b : a);
+      cc.hidden = false; cc.innerHTML = `Dia mais barato: <b>${dayLbl(cheap.d)}</b>, a ${brl(cpc(cheap))} por contato.`;
+    } else cc.hidden = true;
+  }
+
+  function renderWhen() {
+    const pk = hourPeak(S.breakdowns?.[String(periodDays)]?.hour);
+    const s1 = css("--s1");
+    const hOpts = baseOpts(); hOpts.scales.y.ticks.precision = 0;
+    hOpts.plugins.tooltip.callbacks = { label: c => ` Contatos: ${fmt.format(c.parsed.y)}` };
+    chart("cHour", !pk ? null : {
+      type: "bar",
+      data: { labels: pk.hours.map((_, i) => `${i}h`), datasets: [{ label: "Contatos", data: pk.hours, backgroundColor: pk.hours.map((_, i) => ((i - pk.from + 24) % 24) < 3 ? s1 : css("--s1-soft").replace(/[\d.]+\)$/, ".45)")), borderRadius: 4, borderSkipped: "start", maxBarThickness: 22 }] },
+      options: hOpts,
+    }, "Sem dados por horário ainda.");
+    const names = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    const sums = Array(7).fill(0), cnt = Array(7).fill(0);
+    for (const d of range(periodDays)) { const w = weekdayOf(d); sums[w] += contacts(total([d])); cnt[w]++; }
+    const avgs = sums.map((s, i) => cnt[i] ? s / cnt[i] : 0);
+    const best = avgs.indexOf(Math.max(...avgs));
+    const wOpts = baseOpts();
+    wOpts.plugins.tooltip.callbacks = { label: c => ` Média: ${fmt1.format(c.parsed.y)} contatos` };
+    chart("cWeekday", !avgs.some(Boolean) ? null : {
+      type: "bar",
+      data: { labels: names, datasets: [{ label: "Média de contatos", data: avgs, backgroundColor: avgs.map((_, i) => i === best ? s1 : css("--s1-soft").replace(/[\d.]+\)$/, ".45)")), borderRadius: 4, borderSkipped: "start", maxBarThickness: 30 }] },
+      options: wOpts,
+    }, "Sem contatos no período.");
+    const full = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    document.getElementById("whenCallout").innerHTML = pk
+      ? `Pico de contatos entre <b>${pk.from}h e ${pk.to}h</b> (${fmt1.format(pk.share * 100)}% do total), e <b>${full[best]}</b> é o dia com mais contatos em média. Lead respondido rápido converte muito mais: vale ter alguém dedicado nesses horários.`
+      : avgs.some(Boolean) ? `<b>${full[best]}</b> é o dia com mais contatos em média.` : "Os horários aparecem depois da primeira coleta.";
+  }
+
+  // ---------------------------------------------------------- campanhas
+  function renderCampaigns() {
+    const dates = range(periodDays), totalSpend = total(dates).s, avg = cpc(total(dates));
+    const list = [...byCampaign(dates)].filter(([, t]) => t.s > 0).sort((a, b) => b[1].s - a[1].s);
+    const reach = period().campaign || {};
+    document.getElementById("camps").innerHTML = list.length ? list.map(([id, t]) => {
+      const c = S.campaigns[id] || {};
+      const st = STATUS[c.status] || [c.status ? c.status.toLowerCase() : "—", "off"];
+      const lt = light(t, avg, c.objective);
+      const budget = c.daily_budget ? `${brl(c.daily_budget)}/dia` : c.lifetime_budget ? `${brl(c.lifetime_budget)} no total` : "orçamento nos conjuntos";
+      const r = reach[id];
+      const nAds = [...byAd(dates)].filter(([ad]) => S.ads[ad]?.campaign_id === id).length;
+      return `
+        <div class="card camp">
+          <div class="camp-top"><div><h3>${esc(c.name || "Campanha")}</h3><div class="obj">${esc(OBJECTIVE[c.objective] || c.objective || "")} · ${budget}</div></div><span class="status ${st[1]}">${st[0]}</span></div>
+          <div class="stats4">
+            <div><b class="num">${brl(t.s)}</b><span>Investido</span></div>
+            <div><b class="num">${fmt.format(contacts(t))}</b><span>Contatos</span></div>
+            <div><b class="num">${brl(cpc(t))}</b><span>Por contato</span></div>
+            <div><b class="num">${r ? fmt.format(r[0]) : "—"}</b><span>Pessoas alcançadas</span></div>
+          </div>
+          <div class="share"><div class="track"><div class="fill" style="width:${totalSpend ? t.s / totalSpend * 100 : 0}%"></div></div><small>${fmt1.format(totalSpend ? t.s / totalSpend * 100 : 0)}% do investimento · ${fmt1.format(contacts(total(dates)) ? contacts(t) / contacts(total(dates)) * 100 : 0)}% dos contatos</small></div>
+          <div class="foot"><span class="light ${lt.cls}">${lt.txt}</span><button class="linkbtn" data-filter-camp="${esc(id)}">Ver ${nAds} criativo${nAds === 1 ? "" : "s"} →</button></div>
+        </div>`;
+    }).join("") : `<div class="notice">Nenhuma campanha com investimento no período.</div>`;
+  }
+
+  function renderCampFilter() {
+    const sel = document.getElementById("campFilter");
+    const list = [...byCampaign(range(periodDays))].filter(([, t]) => t.s > 0).sort((a, b) => b[1].s - a[1].s);
+    if (galleryCamp !== "all" && !list.some(([id]) => id === galleryCamp)) galleryCamp = "all";
+    sel.innerHTML = `<option value="all">Todas as campanhas</option>` + list.map(([id]) => `<option value="${esc(id)}">${esc(clip(campName(id), 48))}</option>`).join("");
+    sel.value = galleryCamp;
+  }
+
+  // ---------------------------------------------------------- criativos
+  function thumbHtml(m, cls = "") {
+    const src = m.thumb || m.image_src;
+    return src ? `<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'Imagem indisponível'}))">` : `<div class="noimg">Sem imagem</div>`;
+  }
+  function renderAds() {
+    const dates = range(periodDays), avg = cpc(total(dates));
+    let list = [...byAd(dates)].filter(([ad, t]) => t.s > 0 && (galleryCamp === "all" || S.ads[ad]?.campaign_id === galleryCamp));
+    const val = {
+      cost: ([, t]) => contacts(t) ? cpc(t) : Infinity,
+      contacts: ([, t]) => -contacts(t),
+      spend: ([, t]) => -t.s,
+      ctr: ([, t]) => -(ctr(t) || 0),
+    }[gallerySort];
+    list.sort((a, b) => val(a) - val(b) || b[1].s - a[1].s);
+    const eligible = list.filter(([, t]) => contacts(t) >= 3);
+    const bestId = eligible.length ? eligible.reduce((a, b) => cpc(b[1]) < cpc(a[1]) ? b : a)[0] : null;
+    const freqs = S.periods?.["7"]?.ad || {};
+    const cutNew = addDays(S.today, -7);
+    document.getElementById("adsHint").textContent = `${list.length} criativo${list.length === 1 ? "" : "s"} com investimento no período${galleryCamp !== "all" ? " nesta campanha" : ""}`;
+    document.getElementById("ads").innerHTML = list.length ? list.slice(0, 24).map(([ad, t], i) => {
+      const m = S.ads[ad] || {};
+      const lt = light(t, avg, S.campaigns[m.campaign_id]?.objective);
+      const badges = [`<span class="b-rank">#${i + 1}</span>`];
+      if (ad === bestId) badges.push(`<span class="b-best">Melhor custo</span>`);
+      if (fatigue(ad)) badges.push(`<span class="b-tired">Cansando</span>`);
+      if (m.created && m.created.slice(0, 10) >= cutNew) badges.push(`<span class="b-new">Novo</span>`);
+      if (m.status && m.status !== "ACTIVE") badges.push(`<span class="b-off">${(STATUS[m.status] || ["Pausado"])[0].replace(/a$/, "o")}</span>`);
+      if (m.kind === "video") badges.push(`<span class="b-video">▶ Vídeo</span>`);
+      const f = freqs[ad];
+      const text = [m.title, m.body].filter(Boolean).join("\n\n");
+      return `
+        <article class="card ad">
+          <div class="thumb">${thumbHtml(m)}<div class="badges">${badges.join("")}</div></div>
+          <div class="body">
+            <div><div class="ttl">${esc(m.title || m.name || "Anúncio")}</div><div class="camp-name">${esc(campName(m.campaign_id))}</div></div>
+            <div class="cost-line"><div><b class="num">${brl(cpc(t))}</b><small>por contato</small></div><span class="light ${lt.cls}">${lt.txt}</span></div>
+            <div class="mini3">
+              <div><b class="num">${fmt.format(contacts(t))}</b><span>contatos</span></div>
+              <div><b class="num">${brl(t.s)}</b><span>investido</span></div>
+              <div><b class="num">${ctr(t) != null ? fmt1.format(ctr(t) * 100) + "%" : "—"}</b><span>clicaram</span></div>
+            </div>
+            ${f && f[1] ? `<div class="row"><span>Visto ${fmt1.format(f[1])}× por pessoa nos últimos 7 dias</span></div>` : ""}
+            ${text ? `<details><summary>O que o anúncio dizia</summary><p>${esc(text)}</p><button class="btn" data-copy="${esc(text)}">Copiar texto</button></details>` : ""}
+            ${m.permalink ? `<a class="btn" href="${esc(m.permalink)}" target="_blank" rel="noopener">Ver no Instagram</a>` : ""}
+          </div>
+        </article>`;
+    }).join("") : `<div class="notice">Nenhum criativo com investimento no período${galleryCamp !== "all" ? " nesta campanha" : ""}.</div>`;
+  }
+
+  function renderSeen() {
+    const list = [...byAd(range(periodDays))].filter(([, t]) => contacts(t) > 0).sort((a, b) => contacts(b[1]) - contacts(a[1])).slice(0, 3);
+    const tot = contacts(total(range(periodDays)));
+    document.getElementById("seen").innerHTML = list.length ? list.map(([ad, t]) => {
+      const m = S.ads[ad] || {};
+      const text = [m.title, m.body].filter(Boolean).join("\n\n");
+      return `
+        <div class="card">
+          ${(m.thumb || m.image_src) ? `<img src="${esc(m.thumb || m.image_src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}
+          <div class="info">
+            <b>${esc(clip(m.title || m.name || "Anúncio", 80))}</b>
+            <p>${esc(firstLine(m.body) || "Sem texto")}</p>
+            <div class="why">${fmt.format(contacts(t))} contatos (${fmt1.format(tot ? contacts(t) / tot * 100 : 0)}% do total) · ${esc(clip(campName(m.campaign_id), 40))}</div>
+            <div class="actions">${text ? `<button class="btn solid" data-copy="${esc(text)}">Copiar texto do anúncio</button>` : ""}${m.permalink ? `<a class="btn" href="${esc(m.permalink)}" target="_blank" rel="noopener">Ver</a>` : ""}</div>
+          </div>
+        </div>`;
+    }).join("") : `<div class="notice">Nenhum anúncio gerou contatos no período.</div>`;
+  }
+
+  function renderFunnel() {
+    const t = total(range(periodDays)), reach = period().account?.reach;
+    const seen = reach || t.i;
+    const r1 = seen ? t.c / seen : null, r2 = t.c ? contacts(t) / t.c : null;
+    document.getElementById("funnel").innerHTML = `
+      <div class="step"><div class="lbl">${reach ? "Pessoas que viram" : "Vezes que o anúncio apareceu"}</div><div class="big num">${fmt.format(seen)}</div><div class="cost">${brl(seen ? t.s / seen * 1000 : null)} para cada mil ${reach ? "pessoas" : "exibições"}</div></div>
+      <div class="arrow"><div><b>${r1 != null ? fmt1.format(r1 * 100) + "%" : "—"}</b>clicaram</div></div>
+      <div class="step"><div class="lbl">Cliques no anúncio</div><div class="big num">${fmt.format(t.c)}</div><div class="cost">${brl(t.c ? t.s / t.c : null)} por clique</div></div>
+      <div class="arrow"><div><b>${r2 != null ? fmt1.format(r2 * 100) + "%" : "—"}</b>viraram contato</div></div>
+      <div class="step"><div class="lbl">Contatos</div><div class="big num">${fmt.format(contacts(t))}</div><div class="cost">${brl(cpc(t))} por contato</div></div>`;
+  }
+
+  // ---------------------------------------------------------- público
+  function groupRows(rows, keyFn) {
+    const m = new Map();
+    for (const r of rows || []) {
+      const k = keyFn(r), o = r.length - 5;
+      const t = m.get(k) || { s: 0, i: 0, c: 0, l: 0, m: 0 };
+      t.s += r[o]; t.i += r[o + 1]; t.c += r[o + 2]; t.l += r[o + 3]; t.m += r[o + 4];
+      m.set(k, t);
+    }
+    return m;
+  }
+  function barList(entries, max = 8) {
+    if (!entries.length) return `<div class="notice" style="border:0;padding:0">Sem dados no período.</div>`;
+    const top = entries.slice(0, max), mx = Math.max(...top.map(([, t]) => contacts(t))) || 1;
+    return top.map(([k, t]) => `
+      <div class="bar-row wide"><span class="lbl" title="${esc(k)}">${esc(k)}</span>
+      <span class="track"><span class="fill" style="display:block;width:${contacts(t) / mx * 100}%"></span></span>
+      <span class="v">${fmt.format(contacts(t))} <small>· ${cpc(t) != null ? brl(cpc(t)) : "—"}</small></span></div>`).join("");
+  }
+  function renderAudience() {
+    const b = S.breakdowns?.[String(periodDays)] || {};
+    const ACC = { "Sao Paulo": "São Paulo", "Parana": "Paraná", "Goias": "Goiás", "Maranhao": "Maranhão", "Para": "Pará", "Ceara": "Ceará", "Piaui": "Piauí", "Amapa": "Amapá", "Rondonia": "Rondônia", "Espirito Santo": "Espírito Santo", "Paraiba": "Paraíba", "Federal District": "Distrito Federal" };
+    const regName = r => { const n = String(r[0]).replace(/\s*\((state|estado)\)\s*$/i, "").trim(); return ACC[n] || n || "Desconhecido"; };
+    const reg = [...groupRows(b.region, regName)].sort((a, c) => contacts(c[1]) - contacts(a[1]) || c[1].s - a[1].s);
+    document.getElementById("regions").innerHTML = barList(reg.filter(([k]) => k !== "Unknown"));
+    const ageOrder = ["13-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
+    const ages = [...groupRows(b.age_gender, r => r[0])].filter(([k]) => ageOrder.includes(k)).sort((a, c) => ageOrder.indexOf(a[0]) - ageOrder.indexOf(c[0]));
+    document.getElementById("ages").innerHTML = barList(ages.map(([k, t]) => [`${k} anos`, t]), 8);
+    const gl = { female: "Mulheres", male: "Homens", unknown: "Não informado" };
+    const gen = [...groupRows(b.age_gender, r => r[1])].sort((a, c) => contacts(c[1]) - contacts(a[1]));
+    document.getElementById("genders").innerHTML = barList(gen.map(([k, t]) => [gl[k] || k, t]));
+    const pl = [...groupRows(b.placement, r => `${PLATFORM[r[0]] || r[0]} · ${POSITION[r[1]] || String(r[1]).replace(/_/g, " ")}`)].filter(([, t]) => t.s > 0).sort((a, c) => c[1].s - a[1].s);
+    const cheapest = pl.filter(([, t]) => contacts(t) >= 3).reduce((a, x) => !a || cpc(x[1]) < cpc(a[1]) ? x : a, null);
+    document.getElementById("placements").innerHTML = pl.length ? `
+      <thead><tr><th>Onde</th><th>Investido</th><th>Contatos</th><th>Por contato</th></tr></thead>
+      <tbody>${pl.slice(0, 10).map(([k, t]) => `<tr><td><b>${esc(k)}</b></td><td>${brl(t.s)}</td><td>${fmt.format(contacts(t))}</td><td class="${cheapest && cheapest[0] === k ? "best" : ""}">${cpc(t) != null ? brl(cpc(t)) : "—"}</td></tr>`).join("")}</tbody>`
+      : `<tbody><tr><td>Sem dados no período.</td></tr></tbody>`;
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -1,6 +1,11 @@
 # Painel Instagram EdexLab
 
-Painel que se atualiza sozinho com os dados da conta do Instagram, pensado para o time comercial.
+Dois painéis que se atualizam sozinhos, pensados para o time comercial:
+
+- **`index.html`**: conta do Instagram
+- **`anuncios.html`**: campanhas de anúncios (Meta Ads)
+
+Os dois usam a mesma senha e têm um botão no topo para alternar entre eles.
 
 - **GitHub Actions** coleta os dados da Instagram Graph API a cada 6 horas.
 - Os dados ficam em `data/`, **criptografados** com a senha do painel.
@@ -21,6 +26,24 @@ Painel que se atualiza sozinho com os dados da conta do Instagram, pensado para 
 
 O que a Meta **não** libera por meios oficiais: a lista de quem curtiu e a lista de quem seguiu.
 
+## Painel de anúncios
+
+| Seção | O que responde |
+|---|---|
+| Resumo | Quanto foi investido, quantos contatos vieram e quanto custou cada um |
+| Atenção e oportunidades | Campanhas gastando sem resultado, criativos cansando ou caros, criativos baratos com pouca verba |
+| Contatos gerados | Contatos por dia (formulário e conversa) e custo por contato |
+| Quando os contatos chegam | Horário e dia da semana com mais contatos, para escalar o comercial |
+| Campanhas | Semáforo de custo por contato comparado com a média da conta |
+| Criativos | Cada arte com investimento, contatos, custo e cliques |
+| O que o lead viu | Texto dos anúncios que mais trouxeram contatos |
+| Do anúncio ao contato | Funil: viram → clicaram → viraram contato |
+| Quem vira contato | Estados, idade, gênero e posicionamento (Feed, Stories, Reels…) |
+
+**Contato** = formulário preenchido + conversa iniciada (WhatsApp/Direct) por um anúncio.
+
+As miniaturas dos criativos ficam em `data/ads/thumbs/` **sem criptografia** (os links da Meta expiram, por isso são baixadas). São as mesmas artes que já aparecem publicamente na Biblioteca de Anúncios da Meta. Números de investimento e resultado ficam criptografados.
+
 ## Secrets necessários
 
 **Settings → Secrets and variables → Actions**
@@ -29,7 +52,10 @@ O que a Meta **não** libera por meios oficiais: a lista de quem curtiu e a list
 |---|---|
 | `IG_ACCESS_TOKEN` | token do usuário do sistema |
 | `IG_USER_ID` | ID da conta do Instagram |
-| `DASHBOARD_PASSWORD` | senha que o time vai usar para abrir o painel |
+| `DASHBOARD_PASSWORD` | senha que o time vai usar para abrir os painéis |
+| `AD_ACCOUNT_ID` | ID da conta de anúncios (só o número). Sem ele, o painel de anúncios não é coletado |
+
+O token precisa das permissões `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`, `ads_read` e (para a seção Pessoas) `instagram_manage_comments`, e a conta de anúncios precisa estar atribuída ao usuário do sistema com **Ver desempenho**. Se preferir um token separado para anúncios, crie o secret `META_ADS_TOKEN`.
 
 Sem `DASHBOARD_PASSWORD`, o painel funciona sem senha, mas a seção **Pessoas** fica desativada.
 
@@ -59,3 +85,6 @@ Abra a execução com X vermelho em **Actions** e veja o passo "Coletar dados do
 | `não consegui ler o perfil` | Token sem acesso à conta ou ID errado. |
 | `não foi possível abrir os dados com a senha atual` | A `DASHBOARD_PASSWORD` mudou. Volte a senha antiga ou apague `data/state.enc.json`. |
 | `código 190` | Token inválido. Gere outro e atualize o Secret. |
+| `[anúncios] ERRO: o token não consegue ler a conta de anúncios` | Falta `ads_read` no token ou a conta de anúncios não foi atribuída ao usuário do sistema. |
+
+Se a coleta de anúncios falhar, o painel do Instagram é publicado normalmente (o passo de anúncios fica com aviso amarelo em Actions).

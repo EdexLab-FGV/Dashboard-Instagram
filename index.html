@@ -108,6 +108,9 @@ button { font: inherit; }
   background: radial-gradient(900px 420px at 85% -20%, var(--brand-2), transparent 70%), var(--brand);
   color: var(--on-brand); padding: 26px 0 64px;
 }
+.switch { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; margin-bottom: 18px; }
+.switch a { color: var(--on-brand-2); text-decoration: none; font-weight: 700; font-size: 12.5px; padding: 6px 12px; border-radius: 9px; }
+.switch a[aria-current="page"] { background: #fff; color: var(--brand); }
 .hero-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .hero .avatar {
   width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none;
@@ -327,6 +330,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 <div id="app" hidden>
   <header class="hero">
     <div class="wrap">
+      <nav class="switch" id="switch" aria-label="Painéis" hidden><a href="index.html" aria-current="page">Instagram</a><a href="anuncios.html">Anúncios</a></nav>
       <div class="hero-top">
         <img class="avatar" id="avatar" alt="" hidden>
         <div class="who">
@@ -571,6 +575,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   }
 
   function start(data) {
+    Promise.all(["data/ads.enc.json", "data/ads.json"].map(u => fetch(u, { method: "HEAD" }).then(r => r.ok).catch(() => false)))
+      .then(r => { if (r.some(Boolean)) document.getElementById("switch").hidden = false; });
     S = data || { posts: [], history: [], daily: {}, comments: [], flags: {} };
     document.getElementById("app").hidden = false;
     render();
