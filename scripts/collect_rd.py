@@ -205,6 +205,8 @@ def compact(deal, stages):
         "src": name_of(deal.get("deal_source")),
         "cmp": name_of(deal.get("campaign")),
         "pr": pick_field(fields, "praça", "praca", "cidade", "unidade"),
+        "cu": pick_field(fields, "curso", "mba", "programa", "produto"),
+        "prd": ", ".join(filter(None, (name_of(p) or name_of((p or {}).get("product")) for p in (deal.get("deal_products") or []))))[:200] or None,
         "dv": day(pick_field(fields, "data da venda", "data venda", "matrícula", "matricula")),
         "lr": name_of(deal.get("deal_lost_reason")),
         "rt": deal.get("rating"),
@@ -214,6 +216,28 @@ def compact(deal, stages):
     if POR_CONSULTOR:
         row["u"] = name_of(deal.get("user"))
     return {k: v for k, v in row.items() if v not in (None, "", False) or k == "w"}
+
+
+LABELS = {}
+
+
+def log_field_summary(deals):
+    """Mostra (só nomes e contagens, nunca valores) quais campos personalizados vieram preenchidos."""
+    if LABELS:
+        top = sorted(LABELS.items(), key=lambda kv: -kv[1])[:25]
+        log("campos personalizados preenchidos: " + "; ".join(f"{k} ({v})" for k, v in top))
+    else:
+        log("nenhum campo personalizado preenchido nos negócios")
+    rows = list(deals.values())
+    n = len(rows) or 1
+    def cnt(key):
+        return sum(1 for r in rows if r.get(key))
+    log(f"com praça/cidade: {cnt('pr')} · com data da venda: {cnt('dv')} · com fonte: {cnt('src')} · com campanha: {cnt('cmp')} · com curso: {cnt('cu')} · com produto: {cnt('prd')} (de {n})")
+    srcs = {}
+    for r in rows:
+        k = r.get("src") or "(sem fonte)"
+        srcs[k] = srcs.get(k, 0) + 1
+    log("fontes: " + "; ".join(f"{k} ({v})" for k, v in sorted(srcs.items(), key=lambda kv: -kv[1])[:20]))
 
 
 def fetch_deals(stages, today):
@@ -236,11 +260,11 @@ def fetch_deals(stages, today):
             if items and not sample_logged:
                 d0 = items[0]
                 log("campos do negócio: " + ", ".join(sorted(d0.keys())))
-                labels = sorted(custom_fields(d0).keys())
-                if labels:
-                    log("campos personalizados: " + ", ".join(labels))
                 sample_logged = True
             for d in items:
+                for lb, val in custom_fields(d).items():
+                    if lb and val not in (None, "", []):
+                        LABELS[lb] = LABELS.get(lb, 0) + 1
                 row = compact(d, stages)
                 deals[row["id"]] = row
             got += len(items)
@@ -267,6 +291,7 @@ def main():
         deals = fetch_deals(stages, today)
     except ApiError as e:
         fail(f"não consegui ler os negócios ({e})")
+    log_field_summary(deals)
     rows = sorted(deals.values(), key=lambda r: r.get("cr") or "")
     state = {
         "version": 1,
@@ -280,7 +305,7 @@ def main():
     won = sum(1 for r in rows if r.get("w") is True)
     lost = sum(1 for r in rows if r.get("w") is False)
     log(f"ok: {len(rows)} negócios desde {HIST_START:%m/%Y} · {won} vendas · {lost} perdas · "
-        f"{len(rows) - won - lost} em andamento · {calls} chamadas · {'criptografado' if PASSWORD else 'SEM senha'}")
+        f"{len(rows) - won - lost} em andamento · {calls} chamadas · {'criptografado' if PASSWORD ? 'criptografado' : 'SEM senha'}")
 
 
 if __name__ == "__main__":
