@@ -136,8 +136,8 @@ button { font: inherit; }
 
 /* --------------------------------------------------------------- nav */
 .nav {
-  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20; background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 .nav .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
 .nav a {
@@ -829,7 +829,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   const rowsIn = (rg, skip) => ROWS.filter(r => inRange(r, rg) && passFilters(r, skip));
   const blank = () => ({ s: 0, i: 0, c: 0, k: 0, l: 0, msg: 0, r: 0, n: 0 });
   function sum(rows) { const t = blank(); for (const r of rows) { t.s += r.s; t.i += r.i; t.c += r.c; t.k += r.k; t.l += r.l; t.msg += r.msg; t.r += r.r; t.n++; } return t; }
-  function groupBy(rows, key) { const g = new Map(); for (const r of rows) { const k = key(r); g.set(k, (g.get(k) || []).concat([r])); } return [...g].map(([k, v]) => [k, sum(v), v]); }
+  function groupBy(rows, key) { const g = new Map(); for (const r of rows) { const k = key(r); const a = g.get(k); if (a) a.push(r); else g.set(k, [r]); } return [...g].map(([k, v]) => [k, sum(v), v]); }
   const leads = t => t.l + t.msg;
   const cpl = t => leads(t) ? t.s / leads(t) : null;
   const ctr = t => t.i ? t.c / t.i : null;

@@ -136,8 +136,8 @@ button { font: inherit; }
 
 /* --------------------------------------------------------------- nav */
 .nav {
-  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20; background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 .nav .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
 .nav a {
@@ -732,7 +732,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   // ------------------------------------------------------------ dados
   const match = (rules, text, fallback) => { const u = (text || "").toUpperCase(); const r = rules.find(([rx]) => rx.test(u)); return r ? r[1] : fallback; };
   const addDays = (iso, n) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
-  const daysBetween = (a, b) => Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / DAY);
+  const dayNum = (() => { const c = new Map(); return iso => { let v = c.get(iso); if (v === undefined) { v = Math.round(Date.parse(iso.slice(0, 10) + "T12:00:00Z") / DAY); c.set(iso, v); } return v; }; })();
+  const daysBetween = (a, b) => dayNum(b) - dayNum(a);
   const br = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
   function prepare() {
     DEALS = (RD.deals || []).map(d => {
@@ -752,10 +753,17 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
         const camp = (ADS.campaigns || {})[a.c] || "";
         cls[ad] = { curso: match(CURSO_RULES, camp, "Outros"), cidade: match(CIDADE_RULES, camp, SEM) };
       }
-      for (const [w, ads] of Object.entries(ADS.weeks)) for (const [ad, r] of Object.entries(ads)) {
-        const c = cls[ad] || { curso: "Outros", cidade: SEM };
-        SPEND.push({ w, curso: c.curso, cidade: c.cidade, s: r.s || 0, l: (r.l || 0) + (r.m || 0) });
+      const agg = new Map();
+      for (const [w, ads] of Object.entries(ADS.weeks)) {
+        const e = addDays(w, 6);
+        for (const [ad, r] of Object.entries(ads)) {
+          const c = cls[ad] || { curso: "Outros", cidade: SEM };
+          const k = w + "|" + c.curso + "|" + c.cidade;
+          const t = agg.get(k) || { w, e, curso: c.curso, cidade: c.cidade, s: 0, l: 0 };
+          t.s += r.s || 0; t.l += (r.l || 0) + (r.m || 0); agg.set(k, t);
+        }
       }
+      SPEND = [...agg.values()];
     }
   }
   function periodRange(key) {
@@ -773,10 +781,16 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   const createdIn = (rg, skip) => DEALS.filter(d => d.cr && d.cr >= rg.from && d.cr <= rg.to && pass(d, skip));
   const wonIn = (rg, skip) => DEALS.filter(d => d.sale && d.sale >= rg.from && d.sale <= rg.to && pass(d, skip));
   const lostIn = (rg, skip) => DEALS.filter(d => d.w === false && d.cl && d.cl >= rg.from && d.cl <= rg.to && pass(d, skip));
-  const spendIn = (rg, curso, cidade) => SPEND.filter(r => { const end = addDays(r.w, 6); return end >= rg.from && r.w <= rg.to && (curso == null || r.curso === curso) && (cidade == null || r.cidade === cidade); })
-    .reduce((t, r) => { // semana parcialmente no período: proporcional aos dias
-      const a = r.w < rg.from ? rg.from : r.w, b = addDays(r.w, 6) > rg.to ? rg.to : addDays(r.w, 6);
-      const f = Math.max(0, daysBetween(a, b) + 1) / 7; t.s += r.s * f; t.l += r.l * f; return t; }, { s: 0, l: 0 });
+  function spendIn(rg, curso, cidade) {
+    const t = { s: 0, l: 0 };
+    for (const r of SPEND) {
+      if (r.e < rg.from || r.w > rg.to || (curso != null && r.curso !== curso) || (cidade != null && r.cidade !== cidade)) continue;
+      let f = 1; // semana só parcialmente no período: proporcional aos dias
+      if (r.w < rg.from || r.e > rg.to) f = Math.max(0, daysBetween(r.w < rg.from ? rg.from : r.w, r.e > rg.to ? rg.to : r.e) + 1) / 7;
+      t.s += r.s * f; t.l += r.l * f;
+    }
+    return t;
+  }
   const median = arr => { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
   const lastTouch = d => d.la || d.cr;
 
@@ -821,7 +835,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   }
 
   // ------------------------------------------------------------ render
-  function render() { renderHeader(); renderKPIs(); renderSummary(); renderCost(); renderPipe(); renderMonths(); renderSources(); renderLost(); renderUsers(); }
+  let costCache = null;
+  function render() { costCache = null; renderHeader(); renderKPIs(); renderSummary(); renderCost(); renderPipe(); renderMonths(); renderSources(); renderLost(); renderUsers(); }
   function renderHeader() {
     const upd = new Date(RD.updated_at);
     document.getElementById("updated").textContent = `RD Station CRM desde ${br(DEALS[0]?.cr || RD.today)} · atualizado em ${upd.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}`;
@@ -872,6 +887,10 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   }
 
   function costRows(p) {
+    if (costCache && costCache.key === p.from + p.to + fCurso + fCidade) return costCache.rows;
+    const rows = costRowsRaw(p); costCache = { key: p.from + p.to + fCurso + fCidade, rows }; return rows;
+  }
+  function costRowsRaw(p) {
     const won = wonIn(p, { curso: true, cidade: true }), created = createdIn(p, { curso: true, cidade: true });
     const keys = new Map();
     const key = (c, ci) => c + "|" + ci;
@@ -880,7 +899,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
     won.forEach(d => { const r = get(d.curso, d.cidade); r.won++; if (d.meta) r.wonMeta++; });
     if (SPEND.length) {
       const sp = new Map();
-      SPEND.forEach(s => { if (s.w <= p.to && addDays(s.w, 6) >= p.from) sp.set(key(s.curso, s.cidade), true); });
+      SPEND.forEach(s => { if (s.w <= p.to && s.e >= p.from) sp.set(key(s.curso, s.cidade), true); });
       [...sp.keys()].forEach(k => { const [c, ci] = k.split("|"); get(c, ci); });
     }
     return [...keys.values()]

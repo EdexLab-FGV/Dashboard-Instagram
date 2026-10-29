@@ -136,8 +136,8 @@ button { font: inherit; }
 
 /* --------------------------------------------------------------- nav */
 .nav {
-  position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 20; background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 .nav .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-top: 8px; padding-bottom: 8px; }
 .nav a {
@@ -480,6 +480,42 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 #report .r-cards .ad .n { font-size: 9px; color: var(--ink2); margin-top: 4px; }
 #report .r-list { margin: 0; padding-left: 16px; }
 #report .r-list li { margin: 4px 0; break-inside: avoid; }
+/* últimos posts */
+.last3 { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 960px) { .last3 { grid-template-columns: 1fr; } }
+.lp { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.lp .cover { position: relative; aspect-ratio: 4 / 5; background: var(--surface-2); overflow: hidden; display: block; }
+@media (max-width: 960px) and (min-width: 561px) { .last3 { grid-template-columns: repeat(2, 1fr); } }
+.lp em { font-style: normal; }
+.lp .cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+.lp:hover .cover img { transform: scale(1.03); }
+.lp .badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.lp .badges span { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px; background: rgba(255,255,255,.92); color: #111; }
+.lp .badges .age { background: rgba(10,15,25,.72); color: #fff; }
+.lp .badges .live { background: #0f7b3e; color: #fff; }
+.lp .verdict { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 12px; background: rgba(10,15,25,.78); color: #fff; font-size: 12.5px; font-weight: 700; backdrop-filter: blur(4px); }
+.lp .verdict i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.lp .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+.lp .cap { font-size: 13.5px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lp .hero-m { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.lp .hero-m b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.lp .hero-m small { font-size: 12px; color: var(--muted); font-weight: 600; display: block; }
+.lp .mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.lp .mgrid div { background: var(--surface-2); border-radius: 10px; padding: 7px 9px; min-width: 0; }
+.lp .mgrid b { display: block; font-size: 15px; font-weight: 800; }
+.lp .mgrid span { font-size: 10.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+.lp .mgrid em { font-style: normal; font-size: 11px; font-weight: 800; display: block; margin-top: 1px; }
+.lp em.up { color: var(--good); } .lp em.down { color: var(--bad); } .lp em.flat { color: var(--muted); }
+.lp .hero-m em { font-size: 13px; font-weight: 800; }
+.lp .eng { display: grid; gap: 4px; }
+.lp .eng .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); }
+.lp .eng .row b { color: var(--text); }
+.lp .eng .bar { position: relative; height: 8px; border-radius: 5px; background: var(--surface-2); }
+.lp .eng .bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--s1); }
+.lp .eng .bar i { position: absolute; top: -3px; width: 2px; height: 14px; border-radius: 1px; background: var(--text); }
+.lp .note { font-size: 12px; color: var(--text-2); background: var(--surface-2); border-radius: 10px; padding: 8px 10px; }
+.lp .note b { color: var(--text); }
+.lp .actions { display: flex; gap: 8px; margin-top: auto; }
 /* relatorio-injetado */
 /* movimento-injetado */
 </style>
@@ -527,6 +563,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   <nav class="nav"><div class="wrap">
     <a href="#resumo">Resumo</a>
     <a href="#interesse">Interesse</a>
+    <a href="#ultimos">Últimos posts</a>
     <a href="#procura">Posts que geram procura</a>
     <a href="#municao">Para o comercial</a>
     <a href="#pessoas">Pessoas</a>
@@ -561,6 +598,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
           <div class="callout" id="followCallout" hidden></div>
         </div>
       </div>
+    </section>
+
+    <section id="ultimos">
+      <div class="sec-head"><div><h2>Últimos 3 posts</h2><p id="lastHint">Como estão indo as publicações mais recentes, comparadas com a média dos posts anteriores</p></div></div>
+      <div class="last3" id="last3"></div>
     </section>
 
     <section id="procura">
@@ -837,6 +879,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
     renderHeader();
     renderKPIs();
     renderSummary();
+    renderLast3();
     renderInterest();
     renderFollows();
     renderPosts();
@@ -918,6 +961,80 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
     if (!out.length) out.push("Os dados aparecem aqui depois da primeira coleta.");
     document.getElementById("sumTitle").textContent = `Resumo dos últimos ${periodDays} dias`;
     document.getElementById("sumList").innerHTML = out.map(x => `<li>${x}</li>`).join("");
+  }
+
+  // ---------------------------------------------------------- últimos posts
+  function renderLast3() {
+    const all = [...posts()].sort((a, b) => postDate(b) - postDate(a));
+    const last = all.slice(0, 3);
+    const el = document.getElementById("last3");
+    if (!last.length) { el.innerHTML = `<div class="notice">Nenhum post ainda.</div>`; return; }
+    const nowT = lastUpdate().getTime();
+    const ageH = p => (nowT - postDate(p).getTime()) / 36e5;
+    // base de comparação: até 20 posts anteriores com pelo menos 3 dias (já "maduros")
+    const pool = all.slice(3).filter(p => ageH(p) >= 72).slice(0, 20);
+    const baseFor = p => { const same = pool.filter(x => x.type === p.type); return same.length >= 4 ? { list: same, label: `posts de ${(TYPE[p.type] || "mesmo formato").toLowerCase()}` } : { list: pool, label: "posts anteriores" }; };
+    const avg = (list, f) => { const v = list.map(f).filter(x => x != null && isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+    const inter = p => (p.likes || 0) + (p.comments || 0) + (ins(p, "saved") || 0) + (ins(p, "shares") || 0);
+    const rate = p => { const r = reachOf(p); return r ? inter(p) / r : null; };
+    const hist = S.post_hist || {};
+    // valor do post nas primeiras H horas (pela evolução guardada pelo coletor)
+    const at = (id, h, idx) => { const rows = hist[id]; if (!rows) return null; let best = null; for (const r of rows) if (r[0] <= h + 2) best = r; else break; return best && best[0] >= h - 6 && best[idx] != null ? best[idx] : null; };
+    let youngNow = false;
+    const delta = (v, b) => { if (youngNow) return ""; if (v == null || b == null || !b) return `<em class="flat">—</em>`; const c = (v - b) / b; if (Math.abs(c) < .05) return `<em class="flat">na média</em>`; return `<em class="${c > 0 ? "up" : "down"}">${c > 0 ? "▲" : "▼"} ${fmt1.format(Math.abs(c * 100))}%</em>`; };
+    const ago = h => h < 1 ? "agora há pouco" : h < 24 ? `há ${Math.round(h)} h` : `há ${Math.round(h / 24)} dia${Math.round(h / 24) > 1 ? "s" : ""}`;
+    el.innerHTML = last.map(p => {
+      const B = baseFor(p), h = ageH(p), young = h < 48;
+      youngNow = young;
+      const main = reachOf(p) != null ? ["Alcance", reachOf(p), avg(B.list, reachOf), "pessoas alcançadas"] : ["Interações", inter(p), avg(B.list, inter), "curtidas, comentários, salvos e compart."];
+      const cells = [
+        ["Curtidas", p.likes, avg(B.list, x => x.likes)],
+        ["Coment.", p.comments, avg(B.list, x => x.comments)],
+        ["Salvos", ins(p, "saved"), avg(B.list, x => ins(x, "saved"))],
+        ["Compart.", ins(p, "shares"), avg(B.list, x => ins(x, "shares"))],
+        ["Visitas perfil", ins(p, "profile_visits"), avg(B.list, x => ins(x, "profile_visits"))],
+        ["Seguidores", ins(p, "follows"), avg(B.list, x => ins(x, "follows"))],
+      ].filter(c => c[1] != null);
+      // veredito: alcance (ou interações) vs média
+      const ratio = main[2] ? main[1] / main[2] : null;
+      let vc = "var(--muted)", vt = "Sem base de comparação ainda";
+      if (young) { vc = "#3fae4a"; vt = "Ainda crescendo · compare de novo amanhã"; }
+      if (ratio != null && !young) { vt = ratio >= 1.15 ? "Acima da média" : ratio >= .85 ? "Na média" : "Abaixo da média"; vc = ratio >= 1.15 ? "#3fae4a" : ratio >= .85 ? "#f0b443" : "#ef7070"; }
+      if (young && ratio != null && ratio >= 1.15) { vt = "Já passou da média · e ainda crescendo"; }
+      // comparação justa nas primeiras horas (quando há histórico)
+      let early = "";
+      if (young && hist[p.id]) {
+        const H = Math.max(6, Math.floor(h / 6) * 6), mine = at(p.id, H, 1);
+        const others = pool.map(x => at(x.id, H, 1)).filter(v => v != null);
+        if (mine != null && others.length >= 3) {
+          const m = others.reduce((a, b) => a + b, 0) / others.length;
+          youngNow = false;
+          early = `<div class="note">Nas primeiras <b>${H} h</b>: <b>${fmt.format(mine)} curtidas</b>, contra <b>${fmt.format(Math.round(m))}</b> em média nos outros posts no mesmo tempo ${delta(mine, m).replace("<em", "<em style='display:inline'")}.</div>`;
+          youngNow = true;
+        } else early = `<div class="note">Publicado ${ago(h)}: os números ainda estão subindo. A comparação com a média fica justa a partir de amanhã.</div>`;
+      } else if (young) early = `<div class="note">Publicado ${ago(h)}: os números ainda estão subindo. A comparação com a média fica justa a partir de amanhã.</div>`;
+      const r = rate(p), rAvg = avg(B.list, rate), mx = Math.max(r || 0, rAvg || 0) * 1.25 || 1;
+      return `
+        <article class="card lp">
+          <a class="cover" href="${esc(p.permalink)}" target="_blank" rel="noopener">
+            ${p.thumb ? `<img src="${esc(p.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+            <div class="badges"><span class="age ${young ? "live" : ""}">${ago(h)}</span><span>${TYPE[p.type] || p.type}</span></div>
+            <div class="verdict"><i style="background:${vc}"></i>${vt}</div>
+          </a>
+          <div class="body">
+            <div class="cap">${esc(firstLine(p.caption) || "Sem legenda")}</div>
+            <div class="hero-m"><div><b class="num">${fmt.format(main[1])}</b><small>${main[3]}</small></div>${delta(main[1], main[2]).replace("<em", "<em style='font-size:13px'")}</div>
+            <div class="mgrid">${cells.map(([l, v, b]) => `<div><b class="num">${compact.format(v)}</b><span>${l}</span>${delta(v, b)}</div>`).join("")}</div>
+            ${r != null ? `<div class="eng"><div class="row"><span>Taxa de engajamento</span><span><b>${fmt1.format(r * 100)}%</b>${rAvg ? ` · média ${fmt1.format(rAvg * 100)}%` : ""}</span></div>
+              <div class="bar"><span style="width:${r / mx * 100}%"></span>${rAvg ? `<i style="left:${rAvg / mx * 100}%" title="média"></i>` : ""}</div></div>` : ""}
+            ${early}
+            <div class="actions"><a class="btn" href="${esc(p.permalink)}" target="_blank" rel="noopener">Abrir no Instagram</a><button class="btn" data-copy="${esc(p.permalink)}">Copiar link</button></div>
+          </div>
+        </article>`;
+    }).join("");
+    document.getElementById("lastHint").textContent = pool.length
+      ? `Comparados com a média de até ${pool.length} posts anteriores do mesmo formato (com pelo menos 3 dias). ▲ verde = acima da média`
+      : "Como estão indo as publicações mais recentes";
   }
 
   // ---------------------------------------------------------- charts
