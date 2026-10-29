@@ -456,6 +456,27 @@ def update_comments(state, posts, own_username, now):
     state["comments"] = comments[:20000]
 
 
+def update_post_history(state, posts, now):
+    """Guarda como cada post evolui nos primeiros 7 dias (para comparar posts novos de forma justa)."""
+    hist = state.setdefault("post_hist", {})
+    alive = set()
+    for p in posts:
+        ts = datetime.fromisoformat(p["timestamp"].replace("+0000", "+00:00"))
+        age_h = (now - ts).total_seconds() / 3600
+        if age_h <= 60 * 24:
+            alive.add(p["id"])
+        if age_h > 7 * 24:
+            continue
+        ins = p.get("insights") or {}
+        snap = [round(age_h, 1), p.get("likes", 0), p.get("comments", 0), ins.get("reach"), ins.get("saved"), ins.get("shares")]
+        rows = hist.setdefault(p["id"], [])
+        if not rows or snap[0] - rows[-1][0] >= 1:
+            rows.append(snap)
+    for pid in list(hist):
+        if pid not in alive:
+            del hist[pid]
+
+
 # ---------------------------------------------------------------------- main
 
 def main():
@@ -508,6 +529,7 @@ def main():
     state["history"] = state["history"][-MAX_HISTORY:]
 
     update_post_insights(state, posts, prev_posts, now)
+    update_post_history(state, posts, now)
     update_daily(state, now)
     update_demographics(state, now)
     update_comments(state, posts, profile.get("username"), now)
