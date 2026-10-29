@@ -524,6 +524,21 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 .mini span { display: block; height: 100%; border-radius: 4px; background: var(--s1); }
 .warn-note { border: 1px dashed var(--border); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; color: var(--text-2); margin-top: 12px; }
 .warn-note b { color: var(--text); }
+/* Ribeirão × Rio Preto */
+.vs-head { display: grid; grid-template-columns: minmax(0,1fr) 170px minmax(0,1fr); gap: 12px; margin-bottom: 6px; }
+.vs-city { background: var(--surface-2); border-radius: 14px; padding: 14px 16px; }
+.vs-city.a { text-align: right; } .vs-city .nm { font-size: 13px; font-weight: 700; } .vs-city.a .nm { color: var(--s1); } .vs-city.b .nm { color: var(--s2); }
+.vs-city .big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; } .vs-city .sm { font-size: 12px; color: var(--text-2); }
+.vs-mid { display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 700; }
+.vs-row { display: grid; grid-template-columns: minmax(0,1fr) 170px minmax(0,1fr); gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+.vs-row .lab { text-align: center; font-size: 12.5px; color: var(--text-2); }
+.vs-side { display: flex; align-items: center; gap: 8px; min-width: 0; } .vs-side.a { flex-direction: row-reverse; }
+.vs-side .bar { height: 10px; border-radius: 5px; flex: none; transition: width .5s; } .vs-side.a .bar { background: var(--s1); } .vs-side.b .bar { background: var(--s2); }
+.vs-side .v { font-weight: 700; font-size: 14px; white-space: nowrap; }
+.vs-side .win { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--good-bg); color: var(--good); white-space: nowrap; }
+.vs-note { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--s1-soft); font-size: 13px; line-height: 1.6; }
+@media (max-width: 640px) { .vs-head, .vs-row { grid-template-columns: minmax(0,1fr) 96px minmax(0,1fr); gap: 6px; } .vs-city { padding: 10px; } .vs-city .big { font-size: 17px; } .vs-city .sm { font-size: 11px; }
+  .vs-side .bar, .vs-side .win { display: none; } .vs-side.a { justify-content: flex-start; } .vs-side.b { justify-content: flex-end; } .vs-side .v { font-size: 13px; } .vs-side.a .v { color: var(--s1); } .vs-side.b .v { color: var(--s2); } .vs-row .lab { font-size: 11.5px; } }
 </style>
 </head>
 <body>
@@ -554,6 +569,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 
   <nav class="nav"><div class="wrap">
     <a href="#resumo">Resumo</a>
+    <a href="#cidades">Ribeirão × Rio Preto</a>
     <a href="#custo">Custo por matrícula</a>
     <a href="#funil">Funil agora</a>
     <a href="#mes">Mês a mês</a>
@@ -580,6 +596,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
       </div>
       <div class="card summary" style="margin-top:14px"><div class="badge">✦</div><div><h3 id="sumTitle">Resumo</h3><ul id="sumList"></ul></div></div>
       <div class="kpis" id="kpis" style="margin-top:14px"></div>
+    </section>
+
+    <section id="cidades">
+      <div class="sec-head"><div><h2>Ribeirão Preto × São José do Rio Preto</h2><p id="vsSub">As duas cidades lado a lado, no período e curso escolhidos</p></div></div>
+      <div class="card" id="vsBox"></div>
     </section>
 
     <section id="custo">
@@ -737,10 +758,15 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
   const br = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
   function prepare() {
     DEALS = (RD.deals || []).map(d => {
-      const cidade = match(CIDADE_RULES, d.pr, null) || match(CIDADE_RULES, d.cmp, SEM);
+      // curso e cidade: campanha do negócio → campo "curso" → produto do negócio
+      const textos = [d.cmp, d.cu, d.prd].filter(Boolean).map(t => t.replace(/-/g, " "));
+      let curso = null; for (const t of textos) { curso = match(CURSO_RULES, t, null); if (curso) break; }
+      if (!curso) curso = textos.length ? "Outros" : SEM;
+      let cidade = null; for (const t of [d.pr, d.cmp, d.prd]) { cidade = match(CIDADE_RULES, t, null); if (cidade) break; }
+      cidade = cidade || SEM;
       const src = d.src || SEM;
       return {
-        ...d, curso: d.cmp ? match(CURSO_RULES, d.cmp.replace(/-/g, " "), "Outros") : SEM, cidade, src,
+        ...d, curso, cidade, src,
         meta: FONTE_META.test(src.toUpperCase()),
         sale: d.w === true ? (d.dv || d.cl || d.cr) : null,
         open: d.w === null || d.w === undefined,
@@ -836,7 +862,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 
   // ------------------------------------------------------------ render
   let costCache = null;
-  function render() { costCache = null; renderHeader(); renderKPIs(); renderSummary(); renderCost(); renderPipe(); renderMonths(); renderSources(); renderLost(); renderUsers(); }
+  function render() { costCache = null; renderHeader(); renderKPIs(); renderSummary(); renderCities(); renderCost(); renderPipe(); renderMonths(); renderSources(); renderLost(); renderUsers(); }
   function renderHeader() {
     const upd = new Date(RD.updated_at);
     document.getElementById("updated").textContent = `RD Station CRM desde ${br(DEALS[0]?.cr || RD.today)} · atualizado em ${upd.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}`;
@@ -884,6 +910,54 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
     if (topLost) out.push(`Principal motivo de perda: <b>${esc(topLost[0])}</b> (${pct(topLost[1] / lost.length)} das perdas com motivo registrado).`);
     document.getElementById("sumTitle").textContent = `Resumo · ${p.label}`;
     document.getElementById("sumList").innerHTML = out.map(x => `<li>${x}</li>`).join("");
+  }
+
+  function renderCities() {
+    const box = document.getElementById("vsBox"), sec = document.getElementById("cidades");
+    const CA = "Ribeirão Preto", CB = "São José do Rio Preto";
+    const p = periodRange(periodKey), curso = fCurso === "all" ? null : fCurso;
+    const calc = c => {
+      const created = createdIn(p, { cidade: true }).filter(d => d.cidade === c), won = wonIn(p, { cidade: true }).filter(d => d.cidade === c);
+      const sp = spendIn(p, curso, c), cohort = created.filter(d => d.w === true).length;
+      const cyc = median(won.map(d => daysBetween(d.cr, d.sale)).filter(x => x >= 0));
+      return { spend: sp.s, leads: sp.l, cpl: sp.l ? sp.s / sp.l : null, created: created.length, won: won.length, conv: created.length ? cohort / created.length : null, cpw: won.length && sp.s > 1 ? sp.s / won.length : null, cycle: cyc };
+    };
+    const a = calc(CA), b = calc(CB);
+    if (!a.created && !b.created && !a.spend && !b.spend) { sec.hidden = true; return; }
+    sec.hidden = false;
+    const days = v => v == null ? "—" : `${fmt.format(Math.round(v))} dias`;
+    const R = [
+      ["Investimento na Meta", "spend", brl, 0],
+      ["Contatos dos anúncios", "leads", v => fmt.format(Math.round(v)), 1],
+      ["Custo por contato", "cpl", brl, -1],
+      ["Negócios no CRM", "created", v => fmt.format(v), 1],
+      ["Matrículas", "won", v => fmt.format(v), 1],
+      ["Conversão", "conv", pct, 1],
+      ["Investimento por matrícula", "cpw", brl, -1],
+      ["Tempo até matricular", "cycle", days, -1],
+    ];
+    const row = ([l, k, f, dir]) => {
+      const va = a[k], vb = b[k], m = Math.max(va || 0, vb || 0);
+      const ok = va != null && vb != null && va !== vb && dir;
+      const wa = ok && (dir > 0 ? va > vb : va < vb), wb = ok && !wa;
+      const w = v => m && v ? Math.max(3, v / m * 62) : 0;
+      return `<div class="vs-row"><div class="vs-side a"><div class="bar" style="width:${w(va)}%"></div><span class="v num">${va == null ? "—" : f(va)}</span>${wa ? '<span class="win">melhor</span>' : ""}</div><div class="lab">${l}</div><div class="vs-side b"><div class="bar" style="width:${w(vb)}%"></div><span class="v num">${vb == null ? "—" : f(vb)}</span>${wb ? '<span class="win">melhor</span>' : ""}</div></div>`;
+    };
+    const notes = [];
+    if (a.conv != null && b.conv != null && Math.abs(a.conv - b.conv) >= .005) {
+      const [hi, lo, nh, nl] = a.conv > b.conv ? [a, b, "Ribeirão Preto", "Rio Preto"] : [b, a, "Rio Preto", "Ribeirão Preto"];
+      notes.push(`<b>${nh}</b> converte melhor: ${pct(hi.conv)} dos negócios viram matrícula, contra ${pct(lo.conv)} em ${nl}.`);
+    }
+    if (a.cpl != null && b.cpl != null && Math.abs(a.cpl - b.cpl) / Math.max(a.cpl, b.cpl) > .1) {
+      const cheap = a.cpl < b.cpl ? "Ribeirão Preto" : "Rio Preto", conv = a.conv != null && b.conv != null ? (a.conv > b.conv ? "Ribeirão Preto" : "Rio Preto") : null;
+      notes.push(conv && conv !== cheap ? `${cheap} gera contato mais barato, mas o lead fecha menos. Vale olhar o atendimento e a qualidade das campanhas de lá.` : `${cheap} também tem o contato mais barato (${brl(Math.min(a.cpl, b.cpl))}).`);
+    }
+    const semCid = createdIn(p, { cidade: true }).filter(d => d.cidade === SEM).length, totCr = createdIn(p, { cidade: true }).length;
+    if (totCr && semCid / totCr > .2) notes.push(`<span style="color:var(--text-2)">${pct(semCid / totCr)} dos negócios do período estão sem cidade no RD e não entram nessa comparação.</span>`);
+    document.getElementById("vsSub").textContent = `As duas cidades lado a lado · ${p.label}${curso ? " · " + curso : ""}${fCidade !== "all" ? " (o filtro de cidade não se aplica aqui)" : ""}`;
+    box.innerHTML = `<div class="vs-head"><div class="vs-city a"><div class="nm">Ribeirão Preto</div><div class="big num">${a.cpw != null ? brl(a.cpw) : fmt.format(a.won)}</div><div class="sm">${a.cpw != null ? "investidos por matrícula" : "matrículas"}</div></div><div class="vs-mid">vs</div><div class="vs-city b"><div class="nm">SJ Rio Preto</div><div class="big num">${b.cpw != null ? brl(b.cpw) : fmt.format(b.won)}</div><div class="sm">${b.cpw != null ? "investidos por matrícula" : "matrículas"}</div></div></div>`
+      + R.map(row).join("") + (notes.length ? `<div class="vs-note">${notes.join(" ")}</div>` : "")
+      + `<div class="foot-note" style="margin-top:10px">Investimento por matrícula = investimento na Meta na cidade ÷ todas as matrículas da cidade (de qualquer fonte). "Melhor" compara só as duas cidades.</div>`;
   }
 
   function costRows(p) {
