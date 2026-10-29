@@ -10,6 +10,8 @@ on:
     paths:
       - "index.html"
       - "anuncios.html"
+      - "cursos.html"
+      - "comercial.html"
 
 permissions:
   contents: write
@@ -25,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AD_ACCOUNT_ID: ${{ secrets.AD_ACCOUNT_ID }}
+      HAS_RD: ${{ secrets.RD_CRM_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -49,6 +52,15 @@ jobs:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
         run: python3 scripts/collect_ads.py
+
+      - name: Coletar dados do RD Station
+        # só roda se o secret RD_CRM_TOKEN existir; se falhar, os outros painéis são publicados mesmo assim
+        if: github.event_name != 'push' && env.HAS_RD == 'true'
+        continue-on-error: true
+        env:
+          RD_CRM_TOKEN: ${{ secrets.RD_CRM_TOKEN }}
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+        run: python3 scripts/collect_rd.py
 
       - name: Salvar dados no repositório
         if: github.event_name != 'push'
