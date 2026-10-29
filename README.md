@@ -5,6 +5,7 @@ Dois painéis que se atualizam sozinhos, pensados para o time comercial:
 - **`index.html`**: conta do Instagram
 - **`anuncios.html`**: campanhas de anúncios (Meta Ads)
 - **`cursos.html`**: campanhas por curso, cidade e tipo de criativo, com histórico semanal desde jan/2024
+- **`comercial.html`**: do lead à matrícula (RD Station CRM): custo por matrícula, funil, leads esfriando, fontes e motivos de perda
 
 Os dois usam a mesma senha e têm um botão no topo para alternar entre eles.
 
@@ -53,6 +54,16 @@ Mesmo conteúdo da planilha semanal de campanhas, atualizado sozinho:
 - Campanhas de alcance/engajamento ficam fora dos rankings de custo por lead (`CURSOS_SEM_LEAD`).
 - **Baixar planilha** exporta um CSV no mesmo formato da planilha de campanhas (separador `;`, vírgula decimal).
 - O histórico semanal fica em `data/ads_weekly.enc.json`. A primeira coleta busca tudo desde `HIST_START` (padrão 2024-01-01) e pode levar alguns minutos.
+
+## Aba Comercial (RD Station CRM)
+
+- Secret `RD_CRM_TOKEN` com o token do RD Station CRM. O coletor (`scripts/collect_rd.py`) **não guarda** nome, telefone, e-mail nem contatos dos alunos.
+- **Matrícula = negócio marcado como venda** (usa o campo "Data da Venda", quando preenchido; senão, a data de fechamento).
+- **Custo por matrícula** = investimento na Meta (curso × cidade) ÷ matrículas com fonte de anúncio da Meta (`FONTE_META` no `comercial.html`).
+- Curso vem da **campanha** do negócio no RD; cidade vem do campo **Praça**.
+- **Esfriando** = negócio em andamento sem atividade há mais de 7 dias (`DIAS_ESFRIANDO`).
+- Ranking por consultor: desligado. Para ligar, crie a variável `RD_POR_CONSULTOR=1` no passo do RD do workflow.
+- Na primeira coleta, o log mostra os campos que o RD devolve (sem valores), para conferir se Praça e Data da Venda foram encontrados.
 
 ## Secrets necessários
 
