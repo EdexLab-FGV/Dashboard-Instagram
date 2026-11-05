@@ -305,7 +305,7 @@ def main():
     won = sum(1 for r in rows if r.get("w") is True)
     lost = sum(1 for r in rows if r.get("w") is False)
     log(f"ok: {len(rows)} negócios desde {HIST_START:%m/%Y} · {won} vendas · {lost} perdas · "
-        f"{len(rows) - won - lost} em andamento · {calls} chamadas · {'criptografado' if PASSWORD ? 'criptografado' : 'SEM senha'}")
+        f"{len(rows) - won - lost} em andamento · {calls} chamadas · {'criptografado' if PASSWORD else 'criptografado' : 'SEM senha'}")
 
 
 if __name__ == "__main__":
