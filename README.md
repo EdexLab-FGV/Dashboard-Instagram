@@ -6,6 +6,7 @@ Dois painéis que se atualizam sozinhos, pensados para o time comercial:
 - **`anuncios.html`**: campanhas de anúncios (Meta Ads)
 - **`cursos.html`**: campanhas por curso, cidade e tipo de criativo, com histórico semanal desde jan/2024
 - **`comercial.html`**: do lead à matrícula (RD Station CRM): custo por matrícula, funil, leads esfriando, fontes e motivos de perda
+- **`entrevistas.html`**: funil leads → responderam → entrevistas → matrículas, com a Base de Entrevistas (Excel)
 
 Os dois usam a mesma senha e têm um botão no topo para alternar entre eles.
 
@@ -65,6 +66,19 @@ Mesmo conteúdo da planilha semanal de campanhas, atualizado sozinho:
 - Ranking por consultor: desligado. Para ligar, crie a variável `RD_POR_CONSULTOR=1` no passo do RD do workflow.
 - Na primeira coleta, o log mostra os campos que o RD devolve (sem valores), para conferir se Praça e Data da Venda foram encontrados.
 
+## Aba Entrevistas (Base de Entrevistas, Excel)
+
+A planilha fica no Excel (OneDrive/SharePoint da FGV) e **não** vai para o GitHub. A atualização é feita pelo próprio painel:
+
+1. Na planilha: **Arquivo → Criar uma cópia → Baixar uma cópia** (salva um .xlsx no computador).
+2. No painel, aba **Entrevistas** → **Atualizar planilha** → escolha o .xlsx.
+3. O navegador lê a planilha, **descarta nome, contato, observações e matrícula SIGA**, criptografa o resto com a senha do painel e baixa `entrevistas.enc.json`.
+4. No GitHub: pasta **data** → **Add file → Upload files** → arraste o `entrevistas.enc.json` → **Commit changes**. O painel publica sozinho em uns 2 minutos.
+
+- **Responderam** é uma aproximação: negócios do RD que saíram da primeira etapa do funil (ou viraram venda).
+- **Conversão** = matrículas ÷ entrevistas realizadas. Ofertas com muitos entrevistados ainda sem definição ficam sem ponto no gráfico.
+- **Antecedência**: para quem não se matriculou, a data de início é a mais comum da oferta.
+
 ## Secrets necessários
 
 **Settings → Secrets and variables → Actions**
@@ -75,6 +89,7 @@ Mesmo conteúdo da planilha semanal de campanhas, atualizado sozinho:
 | `IG_USER_ID` | ID da conta do Instagram |
 | `DASHBOARD_PASSWORD` | senha que o time vai usar para abrir os painéis |
 | `AD_ACCOUNT_ID` | ID da conta de anúncios (só o número). Sem ele, o painel de anúncios não é coletado |
+| `RD_CRM_TOKEN` | token do RD Station CRM (aba Comercial) |
 
 O token precisa das permissões `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`, `ads_read` e (para a seção Pessoas) `instagram_manage_comments`, e a conta de anúncios precisa estar atribuída ao usuário do sistema com **Ver desempenho**. Se preferir um token separado para anúncios, crie o secret `META_ADS_TOKEN`.
 

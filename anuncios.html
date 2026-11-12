@@ -308,7 +308,9 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 [hidden] { display: none !important; }
 
 /* ----------------------------------------------------------- anúncios */
-.switch { display: inline-flex; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; margin-bottom: 18px; }
+.switch { display: inline-flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; background: rgba(255,255,255,.1); border-radius: 12px; padding: 3px; margin-bottom: 18px; }
+.switch::-webkit-scrollbar { display: none; }
+.switch a { flex: none; }
 .switch a { color: var(--on-brand-2); text-decoration: none; font-weight: 700; font-size: 12.5px; padding: 6px 12px; border-radius: 9px; }
 .switch a[aria-current="page"] { background: #fff; color: var(--brand); }
 .today-chip {
@@ -624,7 +626,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 3
 <div id="app" hidden>
   <header class="hero">
     <div class="wrap">
-      <nav class="switch" aria-label="Painéis"><a href="index.html">Instagram</a><a href="anuncios.html" aria-current="page">Anúncios</a><a href="cursos.html">Cursos</a><a href="comercial.html">Comercial</a></nav>
+      <nav class="switch" aria-label="Painéis"><a href="index.html">Instagram</a><a href="anuncios.html" aria-current="page">Anúncios</a><a href="cursos.html">Cursos</a><a href="comercial.html">Comercial</a><a href="entrevistas.html">Entrevistas</a></nav>
       <div class="hero-top">
         <div class="who">
           <h1 id="title">Painel de Anúncios</h1>
