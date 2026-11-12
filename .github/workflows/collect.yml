@@ -12,6 +12,9 @@ on:
       - "anuncios.html"
       - "cursos.html"
       - "comercial.html"
+      - "entrevistas.html"
+      - "data/entrevistas.enc.json"
+      - "data/entrevistas.json"
 
 permissions:
   contents: write
